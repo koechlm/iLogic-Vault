@@ -1,3 +1,0 @@
-C:\Program Files\Autodesk\Inventor 2018\Bin\iLogicAdd\QuickstartiLogicLibrary.dll
-C:\Program Files\Autodesk\Inventor 2018\Bin\iLogicAdd\QuickstartiLogicLibrary.pdb
-C:\Program Files\Autodesk\Inventor 2019\Bin\iLogicAdd\QuickstartiLogicLibrary.dll

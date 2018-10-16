@@ -1,6 +1,0 @@
-D:\VisualStudio-VDS\2018\VDS Quickstart Utilities\QuickstartiLogicLibrary\bin\Release\QuickstartiLogicLibrary.dll
-D:\VisualStudio-VDS\2018\VDS Quickstart Utilities\QuickstartiLogicLibrary\bin\Release\QuickstartiLogicLibrary.pdb
-D:\VisualStudio-VDS\2018\VDS Quickstart Utilities\QuickstartiLogicLibrary\obj\Release\QuickstartiLogicLibrary.csprojResolveAssemblyReference.cache
-D:\VisualStudio-VDS\2018\VDS Quickstart Utilities\QuickstartiLogicLibrary\obj\Release\QuickstartiLogicLibrary.csproj.CoreCompileInputs.cache
-D:\VisualStudio-VDS\2018\VDS Quickstart Utilities\QuickstartiLogicLibrary\obj\Release\QuickstartiLogicLibrary.dll
-D:\VisualStudio-VDS\2018\VDS Quickstart Utilities\QuickstartiLogicLibrary\obj\Release\QuickstartiLogicLibrary.pdb
