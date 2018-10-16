@@ -1,0 +1,11 @@
+﻿Sub Main
+	Dim oApp As Inventor.Application = ThisApplication
+	Try
+		'If oApp.ActiveDocumentType = DocumentTypeEnum.kDrawingDocumentObject Then oDrawDoc = oApp.ActiveDocument
+		Dim oControlDef As Inventor.ControlDefinition
+		oControlDef = oApp.CommandManager.ControlDefinitions.Item("UpdateCopiedModeliPropertiesCmd")
+		oControlDef.Execute2(True)
+	Catch
+		Logger.Error("Rule 'UpdateCopiedModelProps failed.' ")
+	End Try
+End Sub

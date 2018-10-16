@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1</Version>
+  <Snippets>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Vault Header</Name>
+      <ToolTip>Adds Vault Webservice and Client Framework references. This is the pre-requisite to use Snippets like iLogic Vault Connection, Get Vault File By ... etc.</ToolTip>
+      <Index>2001</Index>
+      <Code>
+        <![CDATA[AddReference "QuickstartiLogicLibrary.dll"
+AddReference "Autodesk.Connectivity.WebServices.dll"
+Imports AWS = Autodesk.Connectivity.WebServices
+AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
+Imports VDF = Autodesk.DataManagement.Client.Framework
+]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>iLogic Vault Connection</Name>
+      <ToolTip>Adds the frame to connect and run Vault commands within rule</ToolTip>
+      <Index>2002</Index>
+      <Code>
+        <![CDATA[Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 'Note - Header "Vault Header" required; insert from iLogic-Vault Quickstart Library
+	Dim mVltCon As VDF.Vault.Currency.Connections.Connection 'Note - Header "Vault Header" required; insert from iLogic-Vault Quickstart Library
+
+	mVltCon = iLogicVault.mGetVaultConn()
+	If  mVltCon Is Nothing Then
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	ElseIf mVltCon.IsConnected = True Then
+		Logger.Info("Validated Vault Connection: Connected")
+	End If
+]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Vault File by FullFileName</Name>
+      <ToolTip>iLogicVault.mGetFileByFullFileName(mVltCon, "$/Designs/&lt;your file name&gt;")</ToolTip>
+      <Index>2003</Index>
+      <Code>
+        <![CDATA['returns full file name in local working folder (download enforces override, if local file exists)
+'returns "FileNotFound if file does not exist at indicated location
+Dim mVaultFile As String = iLogicVault.mGetFileByFullFileName(mVltCon, "$/")
+If mVaultFile = "FileNotFound" Then
+	Logger.Error("Vault file not found - Please double check that file exists in Vault.")
+	ElseIf mVaultFile <> "FileNotFound" Then
+		''add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+		
+End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Vault File by Search</Name>
+      <ToolTip>Search Vault file using 1 to n property/value pairs; returns full local file name in working folder</ToolTip>
+      <Index>2004</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria
+Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+mSearchParams.Add("Description", iProperties.Value("Project", "Description"))
+mSearchParams.Add("Part Number", iProperties.Value("Project", "Part Number"))
+'...add as many as required to enable a unique search result
+
+mVaultFile = iLogicVault.mGetFilebySearchCriteria(mVltCon, mSearchParams)
+'returns full file name in local working folder (download enforces override, if local file exists)
+'returns "FileNotFound if file does not exist at indicated location
+If mVaultFile = "FileNotFound" Then
+	Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
+ElseIf mVaultFile <> "FileNotFound" Then
+	'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Check Vault File(s) Exist by Search</Name>
+      <ToolTip>Search Vault files using 1 to n property/value pairs; returns array of file names and lists these in Message Box.</ToolTip>
+      <Index>2008</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
+Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+mSearchParams.Add("Part Number", "001003")		'applies to file 001003.ipt
+mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+'...add as many as required to enable a unique search result
+
+Dim mVaultFiles As String()
+mVaultFiles = iLogicVault.mCheckFilesExistBySearchCriteria(mVltCon, mSearchParams, False)
+'returns full file name in local working folder (download enforces override, if local file exists)
+'returns "FileNotFound if file does not exist at indicated location
+If mVaultFiles.Count = 0 Then
+	Logger.Error("Vault file search returned no result. - Please double check that file can be found with search criteria applied.")
+	Exit Sub
+End If
+Dim mFileList(mVaultFiles.Length-1) As String
+	Logger.Info("Vault file search found: " & mVaultFiles.ToString)
+	For i As Integer = 0 To mFileList.Length - 1
+		mFileList(i) = mVaultFiles(i).Replace(".ipt", "")
+	Next]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Check In Active Document</Name>
+      <ToolTip>Save and check in active document; Note - requires active Vault connection (Snippet iLogic Vault Connection). Calls UI command and may require user interaction, if dialog suppression is activated for 'Check In' command.</ToolTip>
+      <Index>2005</Index>
+      <Code>
+        <![CDATA[ThisDoc.Save
+Dim oControlDef As Inventor.ControlDefinition = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckinTop")
+oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending before rule exits]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Check Out Active Document</Name>
+      <ToolTip>check out active document.Note - requires active Vault connection (Snippet iLogic Vault Connection). Calls UI command and may require user interaction, if dialog suppression is activated for 'Check out' command.</ToolTip>
+      <Index>2006</Index>
+      <Code>
+        <![CDATA[ThisDoc.Save
+Dim oControlDef As Inventor.ControlDefinition = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckoutTop")
+oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending before rule exits]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Undo Check Out Active Document</Name>
+      <ToolTip>Undo Check Out of active document. Note - requires active Vault connection (Snippet iLogic Vault Connection). Calls UI command and may require user interaction, if dialog suppression is activated for Undo Check Out command. Pending changes may be skipped; use ThisDoc.Document.Dirty to query its state.</ToolTip>
+      <Index>2007</Index>
+      <Code>
+        <![CDATA[Dim oControlDef As Inventor.ControlDefinition
+oControlDef = ThisApplication.CommandManager.ControlDefinitions.Item("VaultUndoCheckoutTop")
+oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending before rule exits]]>
+      </Code>
+    </CodeSnippet>
+  </Snippets>
+</CodeSnippets>

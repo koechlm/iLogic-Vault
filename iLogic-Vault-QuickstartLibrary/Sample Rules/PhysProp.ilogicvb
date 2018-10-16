@@ -1,0 +1,121 @@
+﻿Sub Main
+	
+'run the required prechecks before applying changes to files
+If mCheckLibraries = True Then Exit Sub 'the rule can't add properties/values to content center or library files
+If mFileReadOnly = True Then Exit Sub 'the rule can't apply changes if the file is write protected
+
+Dim oDoc As Inventor.Document
+Dim oPartDoc As Inventor.PartDocument
+Dim oAssyDoc As Inventor.AssemblyDocument
+Dim oCompDef As Inventor.ComponentDefinition
+Dim oSheetMetal As Boolean
+Dim oWeldment As Boolean
+
+Try
+	oDoc = ThisDoc.Document
+	If oDoc.DocumentType = kPartDocumentObject Then
+		oPartDoc = oDoc
+		If oPartDoc.SubType = "{9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}" Then
+			oCompDef = oPartDoc.ComponentDefinition
+			oSheetMetal = True
+			If oCompDef.HasFlatPattern = True Then
+				oFlatExtent = True
+			End If
+		End If
+	End If
+	If oDoc.DocumentType = kAssemblyDocumentObject Then
+		oAssyDoc = oDoc
+		If oAssyDoc.SubType = "{28EC8354-9024-440F-A8A2-0E0E55D635B0}" Then
+			oCompDef = oAssyDoc.ComponentDefinition
+			If oCompDef.WeldBeadMaterial.DisplayName <> "" Then
+				oWeldment = True
+			End If
+		End If
+	End If
+	
+	'set the length units string
+	Units = oDoc.UnitsOfMeasure.MassUnits
+	Select Case Units
+	Case 11284
+		UnitString = "g"
+	Case 11283
+		UnitString = "kg"
+	Case 11286
+		UnitString = "lb"
+	Case 11287
+		UnitString = "oz"
+	End Select
+	
+	iProperties.Value("Custom", "Mass") = Round(iProperties.Mass,3) & " " & UnitString
+	If oSheetMetal = True Then
+		Logger.Info("Sheet Metal Part, save SM Style for PDM raw material info ")
+		If iProperties.Value("Project", "Stock Number").Length = 0 Then
+			iProperties.Value("Custom", "Semi finished") = SheetMetal.GetActiveStyle()
+		End If
+	End If
+	
+'	sync custom material property to enable read/write workflows for PDM
+	iProperties.Value("Custom", "VLT_Material") = iProperties.Material
+	
+	'write custom material property for weldments as Inventor default Material will not publish.
+	If (oWeldment = True) Then
+		Logger.Info("Weldment, save Material property for PDM")
+		iProperties.Material = oCompDef.WeldBeadMaterial.DisplayName
+		iProperties.Value("Custom", "VLT_Material") = oCompDef.WeldBeadMaterial.DisplayName
+	End If
+	
+Catch ex As Exception
+End Try
+End Sub
+
+'function to validate that current file is not a Content Center or user Library file
+'function to validate that current file is not a Content Center or user Library file
+Function mCheckLibraries() As Boolean
+	
+	Dim mDirInfo As System.IO.DirectoryInfo
+	Dim mLibPath As Inventor.ProjectPath
+	Dim mTmpPath As String
+	Dim mCCPath As String 
+	Dim mIPJ As Inventor.DesignProject
+	Dim mIpjPath As String
+	
+	If (ThisDoc.Document.FileSaveCounter <> 0) Then
+		Try
+			mCCPath = ThisApplication.DesignProjectManager.ActiveDesignProject.ContentCenterPath
+			mIPJ = ThisApplication.DesignProjectManager.ActiveDesignProject
+			mIpjPath = mIPJ.FullFileName
+			mFileInfo = New System.IO.FileInfo(ThisDoc.Document.FullFileName)
+			If InStr(mFileInfo.FullName, mCCPath.ToString) Then Return True
+			For Each mLibPath In mIPJ.LibraryPaths
+			    'check relative/absolute paths
+			    If mLibPath.Path.StartsWith(".\") Then
+			        mDirInfo = New System.IO.DirectoryInfo(mIPJ.FullFileName)
+			        mTmpPath = mDirInfo.Root.ToString & mDirInfo.Parent.ToString & mLibPath.Path.ToString.Replace(".\", "\")
+			    End If
+			    If mFileInfo.FullName.StartsWith(mTmpPath) Then Return True
+			Next
+		Catch
+			Logger.Error("Error in Function mCheckLibraries.")
+		End Try
+	Else
+		Logger.Info("File is not saved yet; readonly check skipped.")
+	End If
+End Function
+
+'Function to validate that the current file is editable.
+Function mFileReadOnly As Boolean
+	Dim mFileInfo As System.IO.FileInfo
+	'for new document, not saved yet the readonly check is not required
+	If (ThisDoc.Document.FileSaveCounter = 0) Then
+	mFileInfo = New System.IO.FileInfo(ThisDoc.Document.FullFileName)	
+		Logger.Info(mFileInfo.DirectoryName)
+		If mFileInfo.IsReadOnly = False Then
+			Logger.Info("File " & ThisDoc.FileName & "  is Write Enabled")
+			Return False
+		Else
+			Logger.Warn("File " & ThisDoc.FileName & " is ReadOnly; rule " & " stops execution.")
+			Return True
+		End If
+	End If
+	Logger.Info("File is not saved yet; readonly check skipped.")
+End Function

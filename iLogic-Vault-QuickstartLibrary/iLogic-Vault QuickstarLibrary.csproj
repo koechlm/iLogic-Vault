@@ -98,5 +98,19 @@
     <Compile Include="iLogic-Vault QuickstartLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
+    <Content Include="Sample Rules\RulesOnEvents.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sample Rules\BOMTypeToProp.iLogicVb" />
+    <None Include="Sample Rules\Dimensions.ilogicvb" />
+    <None Include="Sample Rules\PhysProp.ilogicvb" />
+    <None Include="Sample Rules\ScaleAndSheet.iLogicVb" />
+    <None Include="Sample Rules\SetMaterialToCustomProp.iLogicVb" />
+    <None Include="Sample Rules\UidToiProp.ilogicvb" />
+    <None Include="Sample Rules\UpdateCopiedModelProps.ilogicvb" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

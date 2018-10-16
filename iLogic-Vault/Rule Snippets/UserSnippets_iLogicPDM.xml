@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1</Version>
+  <Snippets>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Is ThisDoc a Library File (Boolean)</Name>
+      <ToolTip>Check that current file neither is Content Center nor User Library file.
+Note - Requires function "mCheckLibraries" (also member of this snippet library)</ToolTip>
+      <Index>4001</Index>
+      <Code><![CDATA[If mCheckLibraries  = True Then Exit Sub 'the rule can't add properties/values to content center or library files]]></Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Function mCheckLibraries (Is ThisDoc a Library File)</Name>
+      <ToolTip>Function to validate that current file is not a Content Center or User Library file.
+</ToolTip>
+      <Index>4002</Index>
+      <Code><![CDATA['function to validate that current file is not a Content Center or user Library file
+Function mCheckLibraries() As Boolean
+	
+	Dim mDirInfo As System.IO.DirectoryInfo
+	Dim mLibPath As Inventor.ProjectPath
+	Dim mTmpPath As String
+	Dim mCCPath As String 
+	Dim mIPJ As Inventor.DesignProject
+	Dim mIpjPath As String
+	
+	If (ThisDoc.Document.FileSaveCounter <> 0) Then
+		Try
+			mCCPath = ThisApplication.DesignProjectManager.ActiveDesignProject.ContentCenterPath
+			mIPJ = ThisApplication.DesignProjectManager.ActiveDesignProject
+			mIpjPath = mIPJ.FullFileName
+			mFileInfo = New System.IO.FileInfo(ThisDoc.Document.FullFileName)
+			If InStr(mFileInfo.FullName, mCCPath.ToString) Then Return True
+			For Each mLibPath In mIPJ.LibraryPaths
+			    'check relative/absolute paths
+			    If mLibPath.Path.StartsWith(".\") Then
+			        mDirInfo = New System.IO.DirectoryInfo(mIPJ.FullFileName)
+			        mTmpPath = mDirInfo.Root.ToString & mDirInfo.Parent.ToString & mLibPath.Path.ToString.Replace(".\", "\")
+			    End If
+			    If mFileInfo.FullName.StartsWith(mTmpPath) Then Return True
+			Next
+		Catch
+			Logger.Error("Error in Function mCheckLibraries.")
+		End Try
+	Else
+		Logger.Info("File is not saved yet; readonly check skipped.")
+	End If
+End Function]]></Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Is ThisDoc write protected (Boolean)</Name>
+      <ToolTip>Call the function mFileReadOnly to validate write protection.
+Note - Requires function mFileReadOnly (part of this snippet library)</ToolTip>
+      <Index>4003</Index>
+      <Code><![CDATA[If mFileReadOnly = True Then Exit Sub 'the rule can't apply changes if the file is write protected]]></Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Function mFileReadOnly (Is ThisDoc write protected?)</Name>
+      <ToolTip>Function to validate that the current file is editable.</ToolTip>
+      <Index>4004</Index>
+      <Code><![CDATA['Function to validate that the current file is editable.
+Function mFileReadOnly As Boolean
+	Dim mFileInfo As System.IO.FileInfo
+	'for new document, not saved yet the readonly check is not required
+	If (ThisDoc.Document.FileSaveCounter = 0) Then
+	mFileInfo = New System.IO.FileInfo(ThisDoc.Document.FullFileName)	
+		Logger.Info(mFileInfo.DirectoryName)
+		If mFileInfo.IsReadOnly = False Then
+			Logger.Info("File " & ThisDoc.FileName & "  is Write Enabled")
+			Return False
+		Else
+			Logger.Warn("File " & ThisDoc.FileName & " is ReadOnly; rule " & " stops execution.")
+			Return True
+		End If
+	End If
+	Logger.Info("File is not saved yet; readonly check skipped.")
+End Function]]></Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>GetAllDocumentSubTypes</Name>
+      <ToolTip>Select Case definitions for document types and document sub-types.
+Likely just a sub set of all is required but it is easier to comment/delete the unneeded ones. </ToolTip>
+      <Index>4005</Index>
+      <Code><![CDATA[Sub Main
+	'access the active document
+  	Dim oDoc As Document = ThisApplication.ActiveDocument
+  	'get the document type
+	Dim eDocumentType As Inventor.DocumentTypeEnum = oDoc.DocumentType
+	Dim sDocumentType As String = "Unknown"
+
+	Select Case eDocumentType
+    	Case DocumentTypeEnum.kAssemblyDocumentObject
+      		sDocumentType = "Assembly Document"
+    	Case DocumentTypeEnum.kDesignElementDocumentObject
+      		sDocumentType = "DesignElement Document"
+    	Case DocumentTypeEnum.kDrawingDocumentObject
+				sDocumentType = "Drawing Document"
+		Case DocumentTypeEnum.kForeignModelDocumentObject
+      		sDocumentType = "ForeignModel Document"
+    	Case DocumentTypeEnum.kPartDocumentObject
+      		sDocumentType = "Part Document"
+    	Case DocumentTypeEnum.kPresentationDocumentObject
+      		sDocumentType = "Presentation Document"
+    	Case DocumentTypeEnum.kSATFileDocumentObject
+      		sDocumentType = "SATFile Document"
+    	Case DocumentTypeEnum.kUnknownDocumentObject
+      		sDocumentType = "Unknown Document"
+	End Select
+	
+	'get the document sub-type
+	Dim sDocumentSubType As String = oDoc.SubType
+  	Dim sReadableType As String = "Unknown"
+
+  	'part document sub-types
+  	'part
+  	Select Case sDocumentSubType
+		Case "{4D29B490-49B2-11D0-93C3-7E0706000000}"
+      		sReadableType = "Part"
+      'sheet metal
+	    Case "{9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}"
+			sReadableType = "sheet metal"
+      'generic proxy
+    	Case "{92055419-B3FA-11D3-A479-00C04F6B9531}"
+			sReadableType = "generic proxy"
+      'compatibility proxy
+    	Case "{9C464204-9BAE-11D3-8BAD-0060B0CE6BB4}"
+      		sReadableType = "compatibility proxy"
+      'catalog proxy
+    	Case "{9C88D3AF-C3EB-11D3-B79E-0060B0F159EF}"
+      		sReadableType = "catalog proxy"
+ 		
+		'assembly document sub-types
+    	Case "{E60F81E1-49B3-11D0-93C3-7E0706000000}"
+      		sReadableType = "assembly"
+		Case "{28EC8354-9024-440F-A8A2-0E0E55D635B0}"
+ 			sReadableType = "weldment"
+			
+	  'drawing document sub-types
+    	Case "{BBF9FDF1-52DC-11D0-8C04-0800090BE8EC}"
+      		sReadableType = "drawing"
+			
+ 
+      'design element document sub-types
+		Case "{62FBB030-24C7-11D3-B78D-0060B0F159EF}"
+			sReadableType = "design element"
+
+      'presentation document sub-types
+    	Case "{76283A80-50DD-11D3-A7E3-00C04F79D7BC}"
+			sReadableType = "presentation"
+
+  	End Select
+Logger.Info("Document-Type: " + sDocumentType) 
+Logger.Info( "Sub-Type: " + sReadableType)
+
+End Sub]]></Code>
+    </CodeSnippet>
+  </Snippets>
+</CodeSnippets>

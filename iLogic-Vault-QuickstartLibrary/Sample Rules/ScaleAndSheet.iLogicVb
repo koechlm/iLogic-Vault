@@ -1,0 +1,25 @@
+﻿'Rule to capture the first view's scale; it is handled is primary scale
+'as a default the rule retrieves the name of the first placed view (order of creation); an alternate solution is to define a specific view name to be handled as primary view.
+Public Sub Main
+'MSc = Main Scale
+Try
+	ViewName = mGetViewName()
+	MSc = ActiveSheet.View(ViewName).ScaleString
+	'MSc = ActiveSheet.View("ANSICHT1").ScaleString
+	iProperties.Value("Custom", "Scale")= MSc
+Catch ex As Exception
+	Logger.Error("Rule 'ScaleAndSheet': No view, or no matching view name found to retrieve primary scale info.")
+End Try
+'mFormat = Sheet Size
+Try
+	mFormat = ActiveSheet.Size
+	iProperties.Value("Custom", "Size")=mFormat
+Catch ex As Exception
+	Logger.Error("Rule 'ScaleAndSheet': could not retrieve the size or update the custom property value")
+End Try
+End Sub
+
+Private Function mGetViewName() As String
+	Dim oSheet As Inventor.Sheet = ThisDoc.Document.Sheets(1)
+    return oSheet.DrawingViews.Item(1).Name
+End Function 
