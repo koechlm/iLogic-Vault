@@ -101,16 +101,13 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
-    <Content Include="Sample Rules\RulesOnEvents.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Sample Rules\BOMTypeToProp.iLogicVb" />
-    <None Include="Sample Rules\Dimensions.ilogicvb" />
-    <None Include="Sample Rules\PhysProp.ilogicvb" />
-    <None Include="Sample Rules\ScaleAndSheet.iLogicVb" />
-    <None Include="Sample Rules\SetMaterialToCustomProp.iLogicVb" />
-    <None Include="Sample Rules\UidToiProp.ilogicvb" />
-    <None Include="Sample Rules\UpdateCopiedModelProps.ilogicvb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVaultCheckFilesExists.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVaultCheckIn.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVaultCheckOut.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVaultGetFileByPath.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVaultUndoCheckOut.iLogicVb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

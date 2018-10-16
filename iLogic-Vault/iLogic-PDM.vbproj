@@ -119,12 +119,18 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="Sample Rules iLogic-PDM\BOMTypeToProp.iLogicVb" />
+    <None Include="Sample Rules iLogic-PDM\Dimensions.ilogicvb" />
+    <None Include="Sample Rules iLogic-PDM\PhysProp.ilogicvb" />
+    <None Include="Sample Rules iLogic-PDM\ScaleAndSheet.iLogicVb" />
+    <None Include="Sample Rules iLogic-PDM\SetMaterialToCustomProp.iLogicVb" />
+    <None Include="Sample Rules iLogic-PDM\UidToiProp.ilogicvb" />
+    <None Include="Sample Rules iLogic-PDM\UpdateCopiedModelProps.ilogicvb" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Rule Snippets\UserSnippets_iLogicPDM.xml" />
+    <Content Include="Sample Rules iLogic-PDM\RulesOnEvents.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Sample Rules\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

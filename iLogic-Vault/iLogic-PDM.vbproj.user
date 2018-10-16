@@ -4,4 +4,7 @@
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Autodesk\Inventor 2019\Bin\Inventor.exe</StartProgram>
   </PropertyGroup>
+  <PropertyGroup>
+    <ProjectView>ShowAllFiles</ProjectView>
+  </PropertyGroup>
 </Project>
