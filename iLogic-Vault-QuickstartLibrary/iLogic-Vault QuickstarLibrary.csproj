@@ -103,6 +103,7 @@
     <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Inventor iLogic - Vault Quickstart Library.pptx" />
     <None Include="Sample Rules iLogic-Vault\iLogicVaultCheckFilesExists.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVaultCheckIn.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVaultCheckOut.iLogicVb" />
