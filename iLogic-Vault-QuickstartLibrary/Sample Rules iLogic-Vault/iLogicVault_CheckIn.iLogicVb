@@ -1,0 +1,23 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+AddReference "Autodesk.Connectivity.WebServices.dll"
+Imports AWS = Autodesk.Connectivity.WebServices
+AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
+Imports VDF = Autodesk.DataManagement.Client.Framework
+Sub Main
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 
+	Dim mVltCon As VDF.Vault.Currency.Connections.Connection
+	mVltCon = iLogicVault.mGetVaultConn()
+	If  mVltCon Is Nothing Then
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	ElseIf mVltCon.IsConnected = True Then
+		Try
+			ThisDoc.Save
+			Dim oControlDef As Inventor.ControlDefinition
+			oControlDef = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckinTop")
+			oControlDef.Execute2(True)
+		Catch ex As Exception
+			Logger.Error("Undo Check-In failed; likely, the file wasn't checked out.")
+		End Try
+	End If
+End Sub

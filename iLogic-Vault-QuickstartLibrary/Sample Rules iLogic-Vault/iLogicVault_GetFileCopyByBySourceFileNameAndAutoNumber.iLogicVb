@@ -1,0 +1,35 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+AddReference "Autodesk.Connectivity.WebServices.dll"
+Imports AWS = Autodesk.Connectivity.WebServices
+AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
+Imports VDF = Autodesk.DataManagement.Client.Framework
+Sub Main
+	
+	'Sample based on Vault "INV-Samples" available; adopt search criteria or file path(s) below according other Vault's content.
+	
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 
+	Dim mVltCon As VDF.Vault.Currency.Connections.Connection
+	mVltCon = iLogicVault.mGetVaultConn()
+	If  mVltCon Is Nothing Then
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	ElseIf mVltCon.IsConnected = True Then
+		'MessageBox.Show("Logged In to Vault", "Quickstart iLogic Library", MessageBoxButtons.OK)
+	End If
+	
+	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
+	Dim mNumSchmName As String = "Default"
+	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
+	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
+	
+	'returns full file name in local working folder (download enforces override, if local file exists)
+	'returns "FileNotFound if file does not exist at indicated location
+	Dim mVaultFile As String = iLogicVault.mGetFileCopyBySourceFileNameAndAutoNumber(mVltCon, "$/Designs/Fishing Rod Model/001012.ipt", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.
+	If mVaultFile = "SourceFileNotFound" Or  mVaultFile = "GetNumberFailed" Or mVaultFile = "VaultFileCopyFailed" Then
+		Logger.Error("File copy not created; reason: " & mVaultFile )
+	Else
+		Logger.Info("File " & mVaultFile & " created as copy.")
+			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+	End If
+	
+End Sub

@@ -1,0 +1,27 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+AddReference "Autodesk.Connectivity.WebServices.dll"
+Imports AWS = Autodesk.Connectivity.WebServices
+AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
+Imports VDF = Autodesk.DataManagement.Client.Framework
+Sub Main
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 
+	Dim mVltCon As VDF.Vault.Currency.Connections.Connection
+	mVltCon = iLogicVault.mGetVaultConn()
+	If  mVltCon Is Nothing Then
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	ElseIf mVltCon.IsConnected = True Then
+		'MessageBox.Show("Logged In to Vault", "Quickstart iLogic Library", MessageBoxButtons.OK)
+	End If
+	
+	'returns full file name in local working folder (download enforces override, if local file exists)
+	'returns "FileNotFound if file does not exist at indicated location
+	Dim mVaultFile As String = iLogicVault.mGetFileByFullFileName(mVltCon, "$/Designs.ipj") 'Optionally add ..., True) to activate check out for the file downloaded.
+	If mVaultFile = "FileNotFound" Then
+		Logger.Error("Vault file not found. Please double check that file exists in Vault.")
+	ElseIf mVaultFile <> "FileNotFound" Then
+		Logger.Info("File " & mVaultFile & " downloaded.")
+			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+	End If
+	
+End Sub

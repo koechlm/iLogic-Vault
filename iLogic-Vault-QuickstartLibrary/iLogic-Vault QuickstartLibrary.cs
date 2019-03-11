@@ -37,13 +37,15 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// Download Vault file using full file path, e.g. "$/Designs/Base.ipt". 
+        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder (download enforces override, if local file exists),
+        /// returns "FileNotFound if file does not exist at indicated location.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
         /// <param name="conn">Current Vault Connection</param>
         /// <param name="VaultFullFileName">FullFilePath</param>
+        /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default.</param>
         /// <returns>Local path/filename or error statement "FileNotFound"</returns>
-        public string mGetFileByFullFileName(VDF.Vault.Currency.Connections.Connection conn, string VaultFullFileName)
+        public string mGetFileByFullFileName(VDF.Vault.Currency.Connections.Connection conn, string VaultFullFileName, bool CheckOut = false)
         {
             List<string> mFiles = new List<string>();
             mFiles.Add(VaultFullFileName);
@@ -51,7 +53,14 @@ namespace QuickstartiLogicLibrary
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
             VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
-            settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+            if (CheckOut)
+            {
+                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+            }
+            else
+            {
+                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+            }
             settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
@@ -59,12 +68,19 @@ namespace QuickstartiLogicLibrary
             VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
             mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
             mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
-            settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
             if (results != null)
             {
-                VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                return mFilesDownloaded.LocalPath.FullPath.ToString();
+                try
+                {
+                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
+                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                }
+                catch (Exception)
+                {
+                    return "FileFoundButDownloadFailed";
+                }
             }
             return "FileNotFound";
         }
@@ -127,13 +143,17 @@ namespace QuickstartiLogicLibrary
             mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
             mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
 
-            settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
             if (results != null)
-                if (results != null)
+                try
                 {
                     VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
                     return mFilesDownloaded.LocalPath.FullPath.ToString();
+                }
+                catch (Exception)
+                {
+                    return "FileCopiedButDownloadFailed";
                 }
             return "VaultFileCopyFailure";
         }
@@ -192,7 +212,7 @@ namespace QuickstartiLogicLibrary
             mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
             mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
 
-            settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
             if (results != null)
                 if (results != null)
@@ -213,8 +233,9 @@ namespace QuickstartiLogicLibrary
         /// <param name="conn">Current Vault Connection</param>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is false</param>
+        /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default</param>
         /// <returns>Local path/filename or error statement "FileNotFound"</returns>
-        public string mGetFilebySearchCriteria(VDF.Vault.Currency.Connections.Connection conn, Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = false)
+        public string mGetFilebySearchCriteria(VDF.Vault.Currency.Connections.Connection conn, Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = false, bool CheckOut = false)
         {
             AWS.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
             //iterate mSearchcriteria to get property definitions and build AWS search criteria
@@ -257,7 +278,14 @@ namespace QuickstartiLogicLibrary
                 VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFile));
 
                 VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                if (CheckOut)
+                {
+                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                }
+                else
+                {
+                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                }
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
@@ -265,12 +293,19 @@ namespace QuickstartiLogicLibrary
                 VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
                 mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
                 mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
-                settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
                 if (results != null)
                 {
-                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    try
+                    {
+                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
+                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        return "FileFoundButDownloadFailed";
+                    }
                 }
                 else
                 {
@@ -375,12 +410,19 @@ namespace QuickstartiLogicLibrary
                 VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
                 mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
                 mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
-                settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
                 if (results != null)
                 {
-                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    try
+                    {
+                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
+                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        return "FileCopiedButDownloadFailed";
+                    }
                 }
                 else
                 {
@@ -480,12 +522,19 @@ namespace QuickstartiLogicLibrary
                 VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
                 mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
                 mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
-                settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
                 if (results != null)
                 {
-                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    try
+                    {
+                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
+                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    }
+                    catch (Exception)
+                    {
+                        return "FileCopiedButDownloadFailed";
+                    }
                 }
                 else
                 {
@@ -507,9 +556,9 @@ namespace QuickstartiLogicLibrary
         /// </summary>
         /// <param name="conn">Current Vault Connection</param>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
-        /// <param name="MatchAllCriteria">Switches AND/OR conditions using multiple criterias. Default is false</param>
+        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is false</param>
         /// <returns>Array of file names found</returns>
-        public string[] mCheckFilesExistBySearchCriteria(VDF.Vault.Currency.Connections.Connection conn, Dictionary<string, string> SearchCriteria, bool MatchAllCriteria)
+        public string[] mCheckFilesExistBySearchCriteria(VDF.Vault.Currency.Connections.Connection conn, Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = false)
         {
             List<String> mFilesFound = new List<string>();
             AWS.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
@@ -568,10 +617,10 @@ namespace QuickstartiLogicLibrary
         /// </summary>
         /// <param name="conn">Current Vault Connection</param>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
-        /// <param name="MatchAllCriteria">Switches AND/OR conditions using multiple criterias. Default is false</param>
+        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is false</param>
         /// <param name="CheckOut">Optional. Downloaded files will NOT check-out as default.</param>
         /// <returns>Array of file names found</returns>
-        public string[] mGetMultipleFilesBySearch(VDF.Vault.Currency.Connections.Connection conn, Dictionary<string, string> SearchCriteria, bool MatchAllCriteria, bool CheckOut = false)
+        public string[] mGetMultipleFilesBySearch(VDF.Vault.Currency.Connections.Connection conn, Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = false, bool CheckOut = false)
         {
             List<String> mFilesFound = new List<string>();
             AWS.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
@@ -632,7 +681,7 @@ namespace QuickstartiLogicLibrary
                 {
                     VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
 
-                    settings.AddFileToAcquire(mFileIt, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 }
 
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
@@ -686,5 +735,31 @@ namespace QuickstartiLogicLibrary
             }
         }
 
+        /// <summary>
+        /// Copies a local file to a new name. 
+        /// The source file's location and extension are captured and apply to the copy.
+        /// Use Check-In (iLogic) command for adding the new file to Vault.
+        /// </summary>
+        /// <param name="mFullFileName">File name including full path</param>
+        /// <param name="mNewNameNoExtension">The new target name of the copied file. Path and extension will transfer from the source file.</param>
+        /// <returns>Local path/filename or error statement "LocalFileCopyFailed"</returns>
+        public string mCopyLocalFile(string mFullFileName, string mNewNameNoExtension)
+        {
+            try
+            {
+                System.IO.FileInfo mFileInfo = new System.IO.FileInfo(mFullFileName);
+                string mExt = mFileInfo.Extension;
+                string mFileName = mFileInfo.Name;
+                mFileName = mFileName.Replace(mExt, "");
+                string mNewFullFileName = mFullFileName.Replace(mFileName, mNewNameNoExtension);
+                System.IO.File.Copy(mFullFileName, mNewFullFileName, true);
+                System.IO.FileInfo mNewFileInfo = new System.IO.FileInfo(mNewFullFileName);
+                return mNewFileInfo.FullName;
+            }
+            catch (Exception)
+            {
+                return "LocalFileCopyFailed";
+            }
+        }
     }
 }

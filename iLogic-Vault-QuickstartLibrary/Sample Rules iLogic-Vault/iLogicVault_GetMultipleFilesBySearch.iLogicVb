@@ -1,0 +1,42 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+AddReference "Autodesk.Connectivity.WebServices.dll"
+Imports AWS = Autodesk.Connectivity.WebServices
+AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
+Imports VDF = Autodesk.DataManagement.Client.Framework
+Sub Main
+	
+	'Sample based on Vault "INV-Samples" available; adopt search criteria or file path(s) below according other Vault's content.
+
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 'Note - Header "Vault Header" required; insert from iLogic-Vault Quickstart Library
+	Dim mVltCon As VDF.Vault.Currency.Connections.Connection 'Note - Header "Vault Header" required; insert from iLogic-Vault Quickstart Library
+
+	mVltCon = iLogicVault.mGetVaultConn()
+	If  mVltCon Is Nothing Then
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	ElseIf mVltCon.IsConnected = True Then
+		Logger.Info("Validated Vault Connection: Connected")
+		'Build one to many name/value pairs of Property/Value as search criteria;
+		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+		mSearchParams.Add("Part Number", "00100*")		'applies to files from 001000 to 001009
+		'...add as many as required to enable a unique search result
+		
+		'the list of downloaded files
+		Dim mVaultFiles As String()
+		'returns full file names in local working folder (download enforces override, if local file exists)
+		'returns null (nothing) if no files return		
+		mVaultFiles = iLogicVault.mGetMultipleFilesBySearch(mVltCon, mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
+		'prepare output
+		If mVaultFiles.Count = 0 Then
+			Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
+		ElseIf mVaultFiles.Count > 0 Then
+			Dim mFileList As String
+			For Each mFile As String In mVaultFiles
+				mFileList += mFile & vbCr
+			Next
+			Logger.Info("iLogic-Vault file search found: " & mFileList)
+			'so the files are there, do what ever you need to do consuming these...
+		End If
+	End If
+
+End Sub
