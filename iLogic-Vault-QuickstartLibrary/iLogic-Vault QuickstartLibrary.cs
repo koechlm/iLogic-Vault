@@ -104,6 +104,8 @@ namespace QuickstartiLogicLibrary
 
             if (mSourceFile == null) return "SourceFileNotFound";
 
+            string mExt = String.Format("{0}{1}", ".", (VaultFullFileName.Split('.')).Last());
+
             List<long> mIds = new List<long>();
             mIds.Add(mSourceFile.Id);
 
@@ -111,7 +113,7 @@ namespace QuickstartiLogicLibrary
             long mTargetFldId = mSourceFile.FolderId;
 
             AWS.PropWriteResults mResults = new AWS.PropWriteResults();
-            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, true, null, out mResults);
+            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
             AWS.ByteArray mByteArray = new AWS.ByteArray();
             mByteArray.Bytes = mUploadTicket;
 
@@ -177,6 +179,8 @@ namespace QuickstartiLogicLibrary
 
             if (mSourceFile == null) return "SourceFileNotFound";
 
+            string mExt = String.Format("{0}{1}", ".", (VaultFullFileName.Split('.')).Last());
+
             List<long> mIds = new List<long>();
             mIds.Add(mSourceFile.Id);
 
@@ -184,7 +188,7 @@ namespace QuickstartiLogicLibrary
             long mTargetFldId = mSourceFile.FolderId;
 
             AWS.PropWriteResults mResults = new AWS.PropWriteResults();
-            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, true, null, out mResults);
+            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
             AWS.ByteArray mByteArray = new AWS.ByteArray();
             mByteArray.Bytes = mUploadTicket;
 
@@ -373,6 +377,8 @@ namespace QuickstartiLogicLibrary
                 AWS.File mSourceFile = totalResults.First<AWS.File>();
                 if (mSourceFile == null) return "SourceFileNotFound";
 
+                string mExt = String.Format("{0}{1}", ".", (mSourceFile.Name.Split('.')).Last());
+
                 List<long> mIds = new List<long>();
                 mIds.Add(mSourceFile.Id);
 
@@ -380,7 +386,7 @@ namespace QuickstartiLogicLibrary
                 long mTargetFldId = mSourceFile.FolderId;
 
                 AWS.PropWriteResults mResults = new AWS.PropWriteResults();
-                byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, true, null, out mResults);
+                byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
                 AWS.ByteArray mByteArray = new AWS.ByteArray();
                 mByteArray.Bytes = mUploadTicket;
 
@@ -489,6 +495,8 @@ namespace QuickstartiLogicLibrary
                 AWS.File mSourceFile = totalResults.First<AWS.File>();
                 if (mSourceFile == null) return "SourceFileNotFound";
 
+                string mExt = String.Format("{0}{1}", ".", (mSourceFile.Name.Split('.')).Last());
+
                 List<long> mIds = new List<long>();
                 mIds.Add(mSourceFile.Id);
 
@@ -496,7 +504,7 @@ namespace QuickstartiLogicLibrary
                 long mTargetFldId = mSourceFile.FolderId;
 
                 AWS.PropWriteResults mResults = new AWS.PropWriteResults();
-                byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, true, null, out mResults);
+                byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
                 AWS.ByteArray mByteArray = new AWS.ByteArray();
                 mByteArray.Bytes = mUploadTicket;
 
@@ -721,11 +729,11 @@ namespace QuickstartiLogicLibrary
             {
                 if (mSchmName == "Default")
                 {
-                    NmngSchm = conn.WebServiceManager.DocumentService.GetNumberingSchemesByType(AWS.NumSchmType.Activated).First(n => n.IsDflt == true);
+                    NmngSchm = conn.WebServiceManager.NumberingService.GetNumberingSchemes("FILE", AWS.NumSchmType.Activated).First(n => n.IsDflt == true);
                 }
                 else
                 {
-                    NmngSchm = conn.WebServiceManager.DocumentService.GetNumberingSchemesByType(AWS.NumSchmType.Activated).First(n => n.Name == mSchmName);
+                    NmngSchm = conn.WebServiceManager.NumberingService.GetNumberingSchemes("FILE", AWS.NumSchmType.Activated).First(n => n.Name == mSchmName);
                 }
                 return conn.WebServiceManager.DocumentService.GenerateFileNumber(NmngSchm.SchmID, null);
             }
