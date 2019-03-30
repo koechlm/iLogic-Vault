@@ -5,8 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-using VCF = Autodesk.DataManagement.Client.Framework;
-
+using ACET = Autodesk.Connectivity.Explorer.ExtensibilityTools;
 using AWS = Autodesk.Connectivity.WebServices;
 using VDF = Autodesk.DataManagement.Client.Framework;
 using Autodesk.DataManagement.Client.Framework.Currency;
@@ -55,19 +54,19 @@ namespace QuickstartiLogicLibrary
             VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
             if (CheckOut)
             {
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
             }
             else
             {
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
             }
             settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
             settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-            VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-            mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-            mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+            VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+            mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+            mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
             settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
             if (results != null)
@@ -130,20 +129,20 @@ namespace QuickstartiLogicLibrary
             VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
             if (CheckOut)
             {
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
             }
             else
             {
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
             }
             settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
             settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
 
-            VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-            mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-            mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+            VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+            mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+            mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
 
             settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
@@ -201,20 +200,20 @@ namespace QuickstartiLogicLibrary
             VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
             if (CheckOut)
             {
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
             }
             else
             {
-                settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
             }
             settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
             settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
             settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
 
-            VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-            mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-            mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+            VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+            mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+            mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
 
             settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
@@ -284,19 +283,19 @@ namespace QuickstartiLogicLibrary
                 VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
                 if (CheckOut)
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
                 }
                 else
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
                 }
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
                 settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-                VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-                mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-                mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
                 if (results != null)
@@ -403,19 +402,19 @@ namespace QuickstartiLogicLibrary
                 VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
                 if (CheckOut)
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
                 }
                 else
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
                 }
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
                 settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-                VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-                mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-                mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
                 if (results != null)
@@ -517,19 +516,19 @@ namespace QuickstartiLogicLibrary
                 VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
                 if (CheckOut)
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
                 }
                 else
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
                 }
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
                 settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-                VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-                mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-                mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
                 if (results != null)
@@ -671,19 +670,19 @@ namespace QuickstartiLogicLibrary
                 VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
                 if (CheckOut)
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
                 }
                 else
                 {
-                    settings.DefaultAcquisitionOption = VCF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                    settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
                 }
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Latest;
                 settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-                VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-                mResOpt.OverwriteOption = VCF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-                mResOpt.SyncWithRemoteSiteSetting = VCF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
 
                 foreach (AWS.File wsFile in totalResults)
                 {
@@ -769,5 +768,25 @@ namespace QuickstartiLogicLibrary
                 return "LocalFileCopyFailed";
             }
         }
+
+        public bool mUpdateFileProperties(VDF.Vault.Currency.Connections.Connection conn,
+            Autodesk.Connectivity.WebServices.File mFile, Dictionary<Autodesk.Connectivity.WebServices.PropDef, object> mPropDictonary)
+        {
+            try
+            {
+                ACET.IExplorerUtil mExplUtil = Autodesk.Connectivity.Explorer.ExtensibilityTools.ExplorerLoader.LoadExplorerUtil(
+                                            conn.Server, conn.Vault, conn.UserID, conn.Ticket);
+
+                mExplUtil.UpdateFileProperties(mFile, mPropDictonary);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+
+        }
+
     }
 }
