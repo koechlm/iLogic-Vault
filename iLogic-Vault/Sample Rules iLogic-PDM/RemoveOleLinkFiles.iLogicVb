@@ -1,0 +1,22 @@
+﻿
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+
+	Dim mRefOLEDescr As Inventor.ReferencedOLEFileDescriptor
+	Dim mRefOLEDescrs As Inventor.ReferencedOLEFileDescriptors = ThisDoc.Document.ReferencedOLEFileDescriptors
+
+	For Each mRefOLEDescr In mRefOLEDescrs
+		'clean up existing nc code files if a copy command didn't
+		If mRefOLEDescr.FullFileName IsNot Nothing Then
+'			If mRefOLEDescr.FullFileName.Split("\").Last =  mFileToAttach.Split("\").Last Then 
+				mRefOLEDescr.Delete
+'			End If
+		End If
+	Next
+	
+End Sub

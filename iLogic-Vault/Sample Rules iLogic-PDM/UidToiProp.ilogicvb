@@ -1,4 +1,11 @@
-﻿Sub Main()
+﻿
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
 	'publish the internal name as unique identifier; this helps to find files copied from this one.
 	'the rule must not run on any file, e.g. library files usually down't alllow changes or vaulted files not checked out.
 	If mCheckLibraries = True Then Exit Sub 'the rule can't add properties/values to content center or library files

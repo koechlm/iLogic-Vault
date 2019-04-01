@@ -8,11 +8,11 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("iLogic-Vault")>
-<Assembly: AssemblyDescription("Project to Manage iLogic Rules, Snippets and for debugging rules")>
+<Assembly: AssemblyTitle("iLogic-PDM")>
+<Assembly: AssemblyDescription("Project to Manage iLogic Rules for PDM")>
 <Assembly: AssemblyCompany("Autodesk")>
 <Assembly: AssemblyProduct("iLogic-Vault")>
-<Assembly: AssemblyCopyright("Copyright ©  2018")>
+<Assembly: AssemblyCopyright("Copyright ©  2019")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("2019.0.0.0")>
-<Assembly: AssemblyFileVersion("2019.0.0.0")>
+<Assembly: AssemblyVersion("2020.25.0.0")>
+<Assembly: AssemblyFileVersion("2020.25.0.0")>

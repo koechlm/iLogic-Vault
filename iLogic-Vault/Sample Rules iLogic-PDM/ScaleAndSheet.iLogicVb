@@ -1,4 +1,11 @@
-﻿'Rule to capture the first view's scale; it is handled is primary scale
+﻿
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+'Rule to capture the first view's scale; it is handled is primary scale
 'as a default the rule retrieves the name of the first placed view (order of creation); an alternate solution is to define a specific view name to be handled as primary view.
 Public Sub Main
 'MSc = Main Scale

@@ -1,0 +1,25 @@
+﻿
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+
+	'access the active document
+  	Dim mDoc As Document = ThisApplication.ActiveDocument
+	Dim mCompDef As Inventor.ComponentDefinition
+	
+	'check model based definitions for part, sheet metal, assembly or weldment
+	If mDoc.SubType = "{4D29B490-49B2-11D0-93C3-7E0706000000}" Or mDoc.SubType = "{9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}" _	
+		Or mDoc.SubType = "{E60F81E1-49B3-11D0-93C3-7E0706000000}" Or mDoc.SubType = "{28EC8354-9024-440F-A8A2-0E0E55D635B0}" Then
+		mCompDef = mDoc.ComponentDefinition
+		If mCompDef.ModelAnnotations.Count > 0 Or mCompDef.ModelDatumReferenceFrames.Count > 0 Or mCompDef.ModelToleranceFeatures.Count > 0 Then
+				iProperties.Value("Custom", "Has MBD") = True
+			Else
+				iProperties.Value("Custom", "Has MBD") = False
+		End If
+	End If
+	
+End Sub

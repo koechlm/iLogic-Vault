@@ -110,7 +110,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Inventor iLogic PDM Samples.pptx" />
+    <None Include="Inventor iLogic - PDM Samples.pptx - Shortcut.lnk" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -122,7 +122,9 @@
     </None>
     <None Include="Sample Rules iLogic-PDM\BOMTypeToProp.iLogicVb" />
     <None Include="Sample Rules iLogic-PDM\Dimensions.ilogicvb" />
+    <None Include="Sample Rules iLogic-PDM\HasMBD.iLogicVb" />
     <None Include="Sample Rules iLogic-PDM\PhysProp.ilogicvb" />
+    <None Include="Sample Rules iLogic-PDM\RemoveOleLinkFiles.iLogicVb" />
     <None Include="Sample Rules iLogic-PDM\ScaleAndSheet.iLogicVb" />
     <None Include="Sample Rules iLogic-PDM\SetMaterialToCustomProp.iLogicVb" />
     <None Include="Sample Rules iLogic-PDM\UidToiProp.ilogicvb" />
