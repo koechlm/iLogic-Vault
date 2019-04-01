@@ -3,6 +3,13 @@ AddReference "Autodesk.Connectivity.WebServices.dll"
 Imports AWS = Autodesk.Connectivity.WebServices
 AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
 Imports VDF = Autodesk.DataManagement.Client.Framework
+
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
 Sub Main
 	
 	'Sample based on Vault "INV-Samples" available; adopt search criteria below according other Vault's content.

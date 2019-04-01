@@ -112,7 +112,6 @@
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndAutoNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndNewName.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber_&amp;_CopyLocalFile.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetMultipleFilesBySearch.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb" />
