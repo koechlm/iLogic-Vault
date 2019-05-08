@@ -35,9 +35,10 @@
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\x64\Debug\QuickstartiLogicLibrary.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -101,25 +102,40 @@
   <ItemGroup>
     <Compile Include="iLogic-Vault QuickstartLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Inventor iLogic - Vault Quickstart Library.pptx" />
+    <None Include="..\..\..\..\OneDrive - autodesk\KnowledgeBase\Vault\iLogic-Vault\iLogic-Vault-QuickstartLibrary\Inventor iLogic - Vault Quickstart Library.pptx">
+      <Link>Inventor iLogic - Vault Quickstart Library.pptx</Link>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckIn.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckOut.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByPath.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePath.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchUsingFolderOption.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyByBySourceFileNameAndAutoNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndAutoNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndNewName.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber_&amp;_CopyLocalFile.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetMultipleFilesBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySourceFullFilePath.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySourceFullFilePath.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

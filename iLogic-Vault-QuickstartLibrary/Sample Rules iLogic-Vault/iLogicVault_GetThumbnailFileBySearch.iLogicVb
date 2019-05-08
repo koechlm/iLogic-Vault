@@ -6,7 +6,7 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	
+
 	'enable iLogicVault commands and validate user's login state
 	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
 	If iLogicVault.LoggedIn = False
@@ -19,15 +19,12 @@ Sub Main
 	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
 	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
-
-	'returns full file name in local working folder (download enforces override, if local file exists)
-	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, False)
-
-	If mVaultFile Is Nothing Then
-		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
-	Else
-		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
-		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
-	End If
 	
+	Dim mImageFile As String = iLogicVault.GetThumbnailFileBySearchCriteria(mSearchParams, True)
+	If mImageFile Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''add next action using the downloaded file here...
+			
+	End If
 End Sub

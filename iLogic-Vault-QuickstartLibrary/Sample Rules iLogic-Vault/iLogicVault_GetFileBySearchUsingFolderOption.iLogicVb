@@ -6,10 +6,10 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
+	'Sample based on Vault "INV-Samples" available; adopt search criteria below according other Vault's content.
 	
-	'enable iLogicVault commands and validate user's login state
 	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
-	If iLogicVault.LoggedIn = False
+	If iLogicVault.loggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
@@ -20,9 +20,12 @@ Sub Main
 	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
 
+	'optionally build an array of folders to search in. If we don't all folders are searched. So it's good practice adding the Inventor relevant folders as a default
+	Dim mSearchFolders() As String = {"$/Designs/", "$/Libraries/" }
+	
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, False)
-
+	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, , mSearchFolders)
+	
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
 	Else

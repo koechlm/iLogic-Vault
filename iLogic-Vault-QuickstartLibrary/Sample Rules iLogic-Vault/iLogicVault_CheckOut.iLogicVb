@@ -1,16 +1,17 @@
 ﻿AddReference "QuickstartiLogicLibrary.dll"
-AddReference "Autodesk.Connectivity.WebServices.dll"
-Imports AWS = Autodesk.Connectivity.WebServices
-AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
-Imports VDF = Autodesk.DataManagement.Client.Framework
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
 Sub Main
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 
-	Dim mVltCon As VDF.Vault.Currency.Connections.Connection
-	mVltCon = iLogicVault.mGetVaultConn()
-	If  mVltCon Is Nothing Then
+		'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
-	ElseIf mVltCon.IsConnected = True Then
+	ElseIf iLogicVault.LoggedIn = True Then
 		Dim oApp As Inventor.Application = ThisApplication
 		Dim oControlDef As Inventor.ControlDefinition
 		oControlDef = oApp.CommandManager.ControlDefinitions.Item("VaultCheckoutTop")

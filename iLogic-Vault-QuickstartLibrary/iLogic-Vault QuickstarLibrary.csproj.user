@@ -8,7 +8,7 @@
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <StartProgram>C:\Program Files\Autodesk\Vault Professional 2020\Explorer\Connectivity.VaultPro.exe</StartProgram>
-    <StartAction>Program</StartAction>
+    <StartProgram>C:\Program Files\Autodesk\Inventor 2020\Bin\Inventor.exe</StartProgram>
+    <StartAction>Project</StartAction>
   </PropertyGroup>
 </Project>

@@ -1,4 +1,5 @@
 ﻿AddReference "QuickstartiLogicLibrary.dll"
+AddReference "System.Drawing"
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -19,15 +20,12 @@ Sub Main
 	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
 	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
-
-	'returns full file name in local working folder (download enforces override, if local file exists)
-	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, False)
-
-	If mVaultFile Is Nothing Then
-		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
-	Else
-		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
-		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
-	End If
 	
+	Dim mImage As System.Drawing.Image = iLogicVault.GetThumbnailImageBySearchCriteria(mSearchParams, True)
+	If mImage Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''..as of today, the consumption of Image objects is for custom dialogs (dll) only...
+			
+	End If
 End Sub
