@@ -4,51 +4,33 @@
   <Snippets>
     <CodeSnippet>
       <Category>iLogicVault</Category>
-      <Name>Vault Header</Name>
-      <ToolTip>Adds Vault Webservice and Client Framework references. This is the pre-requisite to use Snippets like iLogic Vault Connection, Get Vault File By ... etc.</ToolTip>
-      <Index>2001</Index>
-      <Code>
-        <![CDATA[AddReference "QuickstartiLogicLibrary.dll"
-AddReference "Autodesk.Connectivity.WebServices.dll"
-Imports AWS = Autodesk.Connectivity.WebServices
-AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
-Imports VDF = Autodesk.DataManagement.Client.Framework
-]]>
-      </Code>
-    </CodeSnippet>
-    <CodeSnippet>
-      <Category>iLogicVault</Category>
-      <Name>iLogic Vault Connection</Name>
+      <Name>iLogic Vault - Initialize</Name>
       <ToolTip>Adds the frame to connect and run Vault commands within rule</ToolTip>
       <Index>2002</Index>
       <Code>
-        <![CDATA[Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib 'Note - Header "Vault Header" required; insert from iLogic-Vault Quickstart Library
-	Dim mVltCon As VDF.Vault.Currency.Connections.Connection 'Note - Header "Vault Header" required; insert from iLogic-Vault Quickstart Library
-
-	mVltCon = iLogicVault.mGetVaultConn()
-	If  mVltCon Is Nothing Then
+        <![CDATA[	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
-	ElseIf mVltCon.IsConnected = True Then
-		Logger.Info("Validated Vault Connection: Connected")
 	End If
+	
 ]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
       <Category>iLogicVault</Category>
       <Name>Get Vault File by FullFileName</Name>
-      <ToolTip>iLogicVault.mGetFileByFullFileName(mVltCon, "$/Designs/&lt;your file name&gt;")</ToolTip>
+      <ToolTip>iLogicVault.mGetFileByFullFileName( "$/Designs/&lt;your file name&gt;")</ToolTip>
       <Index>2003</Index>
       <Code>
         <![CDATA['Downloads Vault file Using full File Path, e.g. "$/Designs/Base.ipt". Returns full File name In local working folder (download enforces override, If local File exists),
-'returns "FileNotFound if file does not exist at indicated location.
 'Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True'
 'Optionally check-out the file; preset: check-out = false
-Dim mVaultFile As String = iLogicVault.mGetFileByFullFileName(mVltCon, "$/") 'add ..., True) to enable check-out of downloaded file.
-If mVaultFile = "FileNotFound" Then
+Dim mVaultFile As String = iLogicVault.GetFileByFullFilePath("$/") 'add ..., True) to enable check-out of downloaded file.
+If mVaultFile Is Nothing Then
 	Logger.Error("Vault file not found - Please double check that file exists in Vault.")
-	ElseIf mVaultFile <> "FileNotFound" Then
+	ElseIf mVaultFile.Count > 0 Then
 		''add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 		
 End If]]>
@@ -62,17 +44,16 @@ End If]]>
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Description", iProperties.Value("Project", "Description"))
-	mSearchParams.Add("Part Number", iProperties.Value("Project", "Part Number"))
+	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
+	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
 
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	'returns "FileNotFound if file does not exist at indicated location
-	mVaultFile = iLogicVault.mGetFilebySearchCriteria(mVltCon, mSearchParams) 'Optionally add ..., True) to activate check out for the file downloaded.
+	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, False)
 
-	If mVaultFile = "FileNotFound" Then
+	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
-	ElseIf mVaultFile <> "FileNotFound" Then
+	Else
 		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
 		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If]]>
@@ -81,7 +62,7 @@ End If]]>
     <CodeSnippet>
       <Category>iLogicVault</Category>
       <Name>Check Vault File(s) Exist by Search</Name>
-      <ToolTip>Search Vault files using 1 to n property/value pairs; returns array of file names and lists these in Message Box.</ToolTip>
+      <ToolTip>Search Vault files using 1 to n property/value pairs; returns list of file names and shares logger info</ToolTip>
       <Index>2008</Index>
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
@@ -90,19 +71,17 @@ mSearchParams.Add("Part Number", "001003")		'applies to file 001003.ipt
 mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 '...add as many as required to enable a unique search result
 
-Dim mVaultFiles As String()
-mVaultFiles = iLogicVault.mCheckFilesExistBySearchCriteria(mVltCon, mSearchParams, False)
-'returns full file name in local working folder (download enforces override, if local file exists)
-'returns "FileNotFound if file does not exist at indicated location
-If mVaultFiles.Count = 0 Then
-	Logger.Error("Vault file search returned no result. - Please double check that file can be found with search criteria applied.")
-	Exit Sub
-End If
-Dim mFileList(mVaultFiles.Length-1) As String
-	Logger.Info("Vault file search found: " & mVaultFiles.ToString)
-	For i As Integer = 0 To mFileList.Length - 1
-		mFileList(i) = mVaultFiles(i).Replace(".ipt", "")
-	Next]]>
+Dim mVaultFiles As List(Of String)
+mVaultFiles = iLogicVault.CheckFilesExistBySearchCriteria(mSearchParams, False) 'returns file name(s)
+If mVaultFiles Is Nothing Then
+	Logger.Error("The file(s) searched was(were) not found. Please double check that the search criteria's relevance.") 
+ElseIf mVaultFiles.Count > 0 Then
+	Dim mFileList As String
+	For Each mFile As String In mVaultFiles
+		mFileList += mFile & vbCr
+	Next
+	Logger.Info("iLogic-Vault file search found: " & mFileList)
+End If]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
@@ -149,18 +128,18 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <ToolTip>Copy file (given Vault path) applying numbering scheme. Returns full local file name of downloaded file, optionally check-out</ToolTip>
       <Index>2009</Index>
       <Code>
-        <![CDATA['Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
+        <![CDATA[	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
 	Dim mNumSchmName As String = "Default"
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
 	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
 	'returns "FileNotFound if file does not exist at indicated location
-	Dim mVaultFile As String = iLogicVault.mGetFileCopyBySourceFileNameAndAutoNumber(mVltCon, "$/Designs/", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.
-	If mVaultFile = "SourceFileNotFound" Or  mVaultFile = "GetNumberFailed" Or mVaultFile = "VaultFileCopyFailed" Then
-		Logger.Error("File copy not created; reason: " & mVaultFile )
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndAutoNumber("$/Designs/Inventor Sample Data/Fishing Rod Model/001012.ipt", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.
+	If mVaultFile Is Nothing Then
+		Logger.Error("File copy not created; check that the file can get found first." )
 	Else
-		Logger.Info("File " & mVaultFile & " created as copy.")
+		Logger.Info("File " & mVaultFile & " created As copy.")
 			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If]]>
       </Code>
@@ -171,16 +150,16 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <ToolTip>Copy file (given Vault path) using new name driven by rule. Returns full local file name of downloaded file, optionally check-out</ToolTip>
       <Index>2010</Index>
       <Code>
-        <![CDATA[	'set new file name according your requirements. Use snippet includin auto-numbering if no individual file name applies.
+        <![CDATA['set new file name according your requirements. Use snippet includin auto-numbering if no individual file name applies.
 	Dim mNewFileName As String = System.Guid.NewGuid.ToString() 'replace unique ID by your naming configuration, e.g. sequence of f(x) key parameter values
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
 	'returns "FileNotFound if file does not exist at indicated location
-	Dim mVaultFile As String = iLogicVault.mGetFileCopyBySourceFileNameAndNewName(mVltCon, "$/Designs/", mNewFileName, False) 'optionally add the mNumInput variable; note - new file name must not contain an extension! The check-out option is True as default; set to False or remove.
-	If mVaultFile = "SourceFileNotFound" Or  mVaultFile = "GetNumberFailed" Or mVaultFile = "VaultFileCopyFailed" Then
-		Logger.Error("File copy not created; reason: " & mVaultFile )
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndNewName("$/Designs/Inventor Sample Data/Fishing Rod Model/001012.ipt", mNewFileName, False) 'optionally add the mNumInput variable; note - new file name must not contain an extension! The check-out option is True as default; set to False or remove.
+	If mVaultFile Is Nothing Then
+		Logger.Error("File copy not created; validate source file can be found and new file name." )
 	Else
-		Logger.Info("File " & mVaultFile & " created as copy.")
+		Logger.Info("File " & mVaultFile & " created As copy.")
 			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If]]>
       </Code>
@@ -191,23 +170,23 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <ToolTip>Copy file (found by search) applying numbering scheme. Returns full local file name of downloaded file, optionally check-out</ToolTip>
       <Index>2011</Index>
       <Code>
-        <![CDATA[	'Build one to many name/value pairs of Property/Value as search criteria;
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Description", iProperties.Value("Project", "Description"))
-	mSearchParams.Add("Part Number", iProperties.Value("Project", "Part Number"))
+	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
+	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
 	
+	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
+	Dim mNumSchmName As String = "Default"
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
-	Dim mNumInput As New System.Collections.Generic.List(Of String)
+	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	'returns "FileNotFound if file does not exist at indicated location
-	Dim mNumSchmName As String = "Default" 'change the name, if other scheme than the configured default should create the number
-	Dim mVaultFile As String = iLogicVault.mGetFileCopyBySourceFileSearchAndAutoNumber(mVltCon, mSearchParams, mNumSchmName, True, , False) 'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
-	If mVaultFile = "SourceFileNotFound" Or  mVaultFile = "GetNumberFailed" Or mVaultFile = "VaultFileCopyFailed" Then
-		Logger.Error("File copy not created; reason: " & mVaultFile )
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndAutoNumber(mSearchParams, mNumSchmName, True, , False) 'the default for optional parameter MatchAllCriteria = false, CheckOut = true, and search in all folders starting from root $/
+	If mVaultFile Is Nothing Then
+		Logger.Error("File copy not created; verify that the file can be found by the search criteria applied. Also verify your input of numbering sheme name and optional parameters")
 	Else
-		Logger.Info("File " & mVaultFile & " created as new copy of search result.")
+		Logger.Info("File " & mVaultFile & " created As New copy Of search result.")
 			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If]]>
       </Code>
@@ -220,29 +199,28 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
 		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-		mSearchParams.Add("Description", iProperties.Value("Project", "Description"))
-		mSearchParams.Add("Part Number", iProperties.Value("Project", "Part Number"))
+		mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
+		mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
 		'...add as many as required to enable a unique search result
 	
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
 	Dim mNumInput As New System.Collections.Generic.List(Of String)
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	'returns "FileNotFound if file does not exist at indicated location
 	Dim mNewFileName As String = System.Guid.NewGuid.ToString() 'replace unique ID by your naming configuration, e.g. sequence of f(x) key parameter values
-	Dim mVaultFile As String = iLogicVault.mGetFileCopyBySourceFileSearchAndNewName(mVltCon, mSearchParams, mNewFileName, True, True)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
-	If mVaultFile = "SourceFileNotFound" Or  mVaultFile = "GetNumberFailed" Or mVaultFile = "VaultFileCopyFailed" Then
-		Logger.Error("File copy not created; reason: " & mVaultFile )
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndNewName(mSearchParams, mNewFileName, True, True)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
+	If mVaultFile Is Nothing Then
+		Logger.Error("File copy not created; check that the source file can get found by the search criteria applied.")
 	Else
-		Logger.Info("File " & mVaultFile & " created as new copy of search result.")
+		Logger.Info("File " & mVaultFile & " created As New copy Of search result.")
 			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
       <Category>iLogicVault</Category>
-      <Name>Get New Vault File Number</Name>
-      <ToolTip>Create single file number by scheme name (or Default).</ToolTip>
+      <Name>Get New Vault File Number and copy file to it</Name>
+      <ToolTip>Create single file number by scheme name (or Default). Copy current local file to it.</ToolTip>
       <Index>2013</Index>
       <Code>
         <![CDATA[	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
@@ -251,13 +229,15 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
 	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
 
 	'Create single file number by scheme name and optional input parameters; returns new number or error message "GetNumberFailed"
-	Dim mFileNumber As String = iLogicVault.mGetNewNumber(mVltCon, mNumSchmName) 'optionally add the mNumInput variable adding ...", mNumInput)
-	If mFileNumber = "GetNumberFailed" Then
+	Dim mFileNumber As String = iLogicVault.GetNewNumber(mNumSchmName) 'optionally add the mNumInput variable adding ...", mNumInput)
+	If mFileNumber Is Nothing Then
 		Logger.Error("Number generation failed; check name (if not 'Default') or input parameters if required.")
 	Else
 		Logger.Info("File Number " & mFileNumber & " created and ready for consumption.")
 			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mLocalFileCopy, True)
-
+		Dim mFullFileName As String = ThisDoc.Document.FullFileName
+        'ThisDoc.Document.SaveAs(mFileNumber, True)
+		Dim mLocaFileCopy As String = iLogicVault.CopyLocalFile(mFullFileName, mFileNumber)
 	End If]]>
       </Code>
     </CodeSnippet>
@@ -280,26 +260,268 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <Index>2015</Index>
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
-		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-		mSearchParams.Add("Part Number", "00100*.ipt") 'search for part families etc...
-		'...add as many as required to enable a unique search result
-		
-		'the list of downloaded files
-		Dim mVaultFiles As String()
-		'returns full file names in local working folder (download enforces override, if local file exists)
-		'returns null (nothing) if no files return		
-		mVaultFiles = iLogicVault.mGetMultipleFilesBySearch(mVltCon, mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
-		'prepare output
-		If mVaultFiles.Count = 0 Then
-			Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
-		ElseIf mVaultFiles.Count > 0 Then
-			Dim mFileList As String
-			For Each mFile As String In mVaultFiles
-				mFileList += mFile & vbCr
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Part Number", "00100*")		'applies to files from 001000 to 001009
+	'...add as many as required to enable a unique search result
+	
+	'the list of downloaded files
+	Dim mVaultFiles As List(Of String)
+	'returns full file names in local working folder (download enforces override, if local file exists)
+	'returns null (nothing) if no files return		
+	mVaultFiles = iLogicVault.GetFilesBySearchCriteria(mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true, searching all folders
+	'prepare output
+	If mVaultFiles.Count = 0 Then
+		Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
+	ElseIf mVaultFiles.Count > 0 Then
+		Dim mFileList As String
+		For Each mFile As String In mVaultFiles
+			mFileList += mFile & vbCr
+		Next
+		Logger.Info("iLogic-Vault file search found: " & mFileList)
+		'so the files are there, do what ever you need to do consuming these...
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Thumbnail from Vault by Search</Name>
+      <ToolTip>Searches a file to extract the thumbnail as System.Drawing.Image</ToolTip>
+      <Index>2017</Index>
+      <Code>
+        <![CDATA[	'Build one to many name/value pairs of Property/Value as search criteria
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
+	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	'...add as many as required to enable a unique search result
+	
+	Dim mImage As System.Drawing.Image = iLogicVault.GetThumbnailImageBySearchCriteria(mSearchParams, True)
+	If mImage Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''..as of today, the consumption of Image objects is for custom dialogs (dll) only...
+			
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Thumbnail from Vault by Full File Path</Name>
+      <ToolTip>Extracts source file's thumbnail as System.Drawing.Image object</ToolTip>
+      <Index>2018</Index>
+      <Code>
+        <![CDATA[Dim mImage As System.Drawing.Image = iLogicVault.GetThumbnailImageByFullSourceFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt", 254, 254)
+	If mImage Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''..as of today, the consumption of Image objects is for custom dialogs (dll) only...
+			
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Thumbnail from Vault by Search as Image file</Name>
+      <ToolTip>Searches for a source file to extract the thumbnail of and downloads it as JPG file</ToolTip>
+      <Index>2019</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
+	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	'...add as many as required to enable a unique search result
+	
+	Dim mImageFile As String = iLogicVault.GetThumbnailFileBySearchCriteria(mSearchParams, True)
+	If mImageFile Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''add next action using the downloaded file here...
+			
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Thumbnail from Vault by Full File Path as Image file</Name>
+      <ToolTip>Extracts thumbnail from source file and downloads it as JPG file</ToolTip>
+      <Index>2020</Index>
+      <Code>
+        <![CDATA[	Dim mImageFile As String = iLogicVault.GetThumbnailFileByFullSourceFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt", 254, 254)
+	If mImageFile Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''add next action using the downloaded file here...
+			
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Is ThisDoc a Library File (Boolean)</Name>
+      <ToolTip>
+        Check that current file neither is Content Center nor User Library file.
+        Note - Requires function "mCheckLibraries" (also member of this snippet library)
+      </ToolTip>
+      <Index>4001</Index>
+      <Code><![CDATA[If mCheckLibraries  = True Then Exit Sub 'the rule can't add properties/values to content center or library files]]></Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Function mCheckLibraries (Is ThisDoc a Library File)</Name>
+      <ToolTip>
+        Function to validate that current file is not a Content Center or User Library file.
+      </ToolTip>
+      <Index>4002</Index>
+      <Code>
+        <![CDATA['function to validate that current file is not a Content Center or user Library file
+Function mCheckLibraries() As Boolean
+	
+	Dim mDirInfo As System.IO.DirectoryInfo
+	Dim mLibPath As Inventor.ProjectPath
+	Dim mTmpPath As String
+	Dim mCCPath As String 
+	Dim mIPJ As Inventor.DesignProject
+	Dim mIpjPath As String
+	
+	If (ThisDoc.Document.FileSaveCounter <> 0) Then
+		Try
+			mCCPath = ThisApplication.DesignProjectManager.ActiveDesignProject.ContentCenterPath
+			mIPJ = ThisApplication.DesignProjectManager.ActiveDesignProject
+			mIpjPath = mIPJ.FullFileName
+			mFileInfo = New System.IO.FileInfo(ThisDoc.Document.FullFileName)
+			If InStr(mFileInfo.FullName, mCCPath.ToString) Then Return True
+			For Each mLibPath In mIPJ.LibraryPaths
+			    'check relative/absolute paths
+			    If mLibPath.Path.StartsWith(".\") Then
+			        mDirInfo = New System.IO.DirectoryInfo(mIPJ.FullFileName)
+			        mTmpPath = mDirInfo.Root.ToString & mDirInfo.Parent.ToString & mLibPath.Path.ToString.Replace(".\", "\")
+			    End If
+			    If mFileInfo.FullName.StartsWith(mTmpPath) Then Return True
 			Next
-			Logger.Info("iLogic-Vault file search found: " & mFileList)
-			'so the files are there, do what ever you need to do consuming these...
-		End If]]>
+		Catch
+			Logger.Error("Error in Function mCheckLibraries.")
+		End Try
+	Else
+		Logger.Info("File is not saved yet; readonly check skipped.")
+	End If
+End Function]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Is ThisDoc write protected (Boolean)</Name>
+      <ToolTip>
+        Call the function mFileReadOnly to validate write protection.
+        Note - Requires function mFileReadOnly (part of this snippet library)
+      </ToolTip>
+      <Index>4003</Index>
+      <Code><![CDATA[If mFileReadOnly = True Then Exit Sub 'the rule can't apply changes if the file is write protected]]></Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>Function mFileReadOnly (Is ThisDoc write protected?)</Name>
+      <ToolTip>Function to validate that the current file is editable.</ToolTip>
+      <Index>4004</Index>
+      <Code>
+        <![CDATA['Function to validate that the current file is editable.
+Function mFileReadOnly As Boolean
+	Dim mFileInfo As System.IO.FileInfo
+	'for new document, not saved yet the readonly check is not required
+	If (ThisDoc.Document.FileSaveCounter <> 0) Then
+	mFileInfo = New System.IO.FileInfo(ThisDoc.Document.FullFileName)	
+		Logger.Info(mFileInfo.DirectoryName)
+		If mFileInfo.IsReadOnly = False Then
+			Logger.Info("File " & ThisDoc.FileName & "  is Write Enabled")
+			Return False
+		Else
+			Logger.Warn("File " & ThisDoc.FileName & " is ReadOnly; rule " & " stops execution.")
+			Return True
+		End If
+	End If
+	Logger.Info("File is not saved yet; readonly check skipped.")
+End Function]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicPDM</Category>
+      <Name>GetAllDocumentSubTypes</Name>
+      <ToolTip>
+        Select Case definitions for document types and document sub-types.
+        Likely just a sub set of all is required but it is easier to comment/delete the unneeded ones.
+      </ToolTip>
+      <Index>4005</Index>
+      <Code>
+        <![CDATA[Sub Main
+	'access the active document
+  	Dim oDoc As Document = ThisApplication.ActiveDocument
+  	'get the document type
+	Dim eDocumentType As Inventor.DocumentTypeEnum = oDoc.DocumentType
+	Dim sDocumentType As String = "Unknown"
+
+	Select Case eDocumentType
+    	Case DocumentTypeEnum.kAssemblyDocumentObject
+      		sDocumentType = "Assembly Document"
+    	Case DocumentTypeEnum.kDesignElementDocumentObject
+      		sDocumentType = "DesignElement Document"
+    	Case DocumentTypeEnum.kDrawingDocumentObject
+				sDocumentType = "Drawing Document"
+		Case DocumentTypeEnum.kForeignModelDocumentObject
+      		sDocumentType = "ForeignModel Document"
+    	Case DocumentTypeEnum.kPartDocumentObject
+      		sDocumentType = "Part Document"
+    	Case DocumentTypeEnum.kPresentationDocumentObject
+      		sDocumentType = "Presentation Document"
+    	Case DocumentTypeEnum.kSATFileDocumentObject
+      		sDocumentType = "SATFile Document"
+    	Case DocumentTypeEnum.kUnknownDocumentObject
+      		sDocumentType = "Unknown Document"
+	End Select
+	
+	'get the document sub-type
+	Dim sDocumentSubType As String = oDoc.SubType
+  	Dim sReadableType As String = "Unknown"
+
+  	'part document sub-types
+  	'part
+  	Select Case sDocumentSubType
+		Case "{4D29B490-49B2-11D0-93C3-7E0706000000}"
+      		sReadableType = "Part"
+      'sheet metal
+	    Case "{9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}"
+			sReadableType = "sheet metal"
+      'generic proxy
+    	Case "{92055419-B3FA-11D3-A479-00C04F6B9531}"
+			sReadableType = "generic proxy"
+      'compatibility proxy
+    	Case "{9C464204-9BAE-11D3-8BAD-0060B0CE6BB4}"
+      		sReadableType = "compatibility proxy"
+      'catalog proxy
+    	Case "{9C88D3AF-C3EB-11D3-B79E-0060B0F159EF}"
+      		sReadableType = "catalog proxy"
+ 		
+		'assembly document sub-types
+    	Case "{E60F81E1-49B3-11D0-93C3-7E0706000000}"
+      		sReadableType = "assembly"
+		Case "{28EC8354-9024-440F-A8A2-0E0E55D635B0}"
+ 			sReadableType = "weldment"
+			
+	  'drawing document sub-types
+    	Case "{BBF9FDF1-52DC-11D0-8C04-0800090BE8EC}"
+      		sReadableType = "drawing"
+			
+ 
+      'design element document sub-types
+		Case "{62FBB030-24C7-11D3-B78D-0060B0F159EF}"
+			sReadableType = "design element"
+
+      'presentation document sub-types
+    	Case "{76283A80-50DD-11D3-A7E3-00C04F79D7BC}"
+			sReadableType = "presentation"
+
+  	End Select
+Logger.Info("Document-Type: " + sDocumentType) 
+Logger.Info( "Sub-Type: " + sReadableType)
+
+End Sub]]>
       </Code>
     </CodeSnippet>
   </Snippets>
