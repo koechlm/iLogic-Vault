@@ -120,10 +120,8 @@
     <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\OneDrive - autodesk\KnowledgeBase\Vault\iLogic-Vault\iLogic-Vault-QuickstartLibrary\Inventor iLogic - Vault Quickstart Library.pptx">
-      <Link>Inventor iLogic - Vault Quickstart Library.pptx</Link>
-    </None>
     <None Include="Autodesk.API-Sample-Signature.pfx" />
+    <None Include="Inventor iLogic - Vault Quickstart Library - 2020.2.0.pdf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
