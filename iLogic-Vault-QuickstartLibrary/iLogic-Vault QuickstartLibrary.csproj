@@ -48,6 +48,13 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\x64\Release\QuickstartiLogicLibrary.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Autodesk.API-Sample-Signature.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
@@ -116,6 +123,7 @@
     <None Include="..\..\..\..\OneDrive - autodesk\KnowledgeBase\Vault\iLogic-Vault\iLogic-Vault-QuickstartLibrary\Inventor iLogic - Vault Quickstart Library.pptx">
       <Link>Inventor iLogic - Vault Quickstart Library.pptx</Link>
     </None>
+    <None Include="Autodesk.API-Sample-Signature.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

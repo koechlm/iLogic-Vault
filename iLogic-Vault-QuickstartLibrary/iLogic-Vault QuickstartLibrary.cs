@@ -27,7 +27,7 @@ namespace QuickstartiLogicLibrary
         /// Any Vault interaction requires an active Client-Server connection.
         /// To avoid Vault API specific references, check connection state using the loggedIn property.
         /// </summary>
-        private static VDF.Vault.Currency.Connections.Connection conn = VltBase.ConnectionManager.Instance.Connection;
+        private VDF.Vault.Currency.Connections.Connection conn = VltBase.ConnectionManager.Instance.Connection;
 
         /// <summary>
         /// Property representing the current user's Vault connection state; returns true, if current user is logged in.
@@ -75,11 +75,19 @@ namespace QuickstartiLogicLibrary
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
             //define download options, including DefaultAcquisitionOptions
-            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
             settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
 
             //download
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+            if (CheckOut)
+            {
+                //define checkout options and checkout
+                settings = CreateAcquireSettings(true);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                results = conn.FileManager.AcquireFiles(settings);
+            }
 
             //refine output
             if (results != null)
@@ -105,9 +113,10 @@ namespace QuickstartiLogicLibrary
         /// <param name="VaultFullFileName">Vault FullFilePath of source file</param>
         /// <param name="NumberingScheme">Individual scheme name or 'Default'</param>
         /// <param name="InputParams">Optional according scheme definition. User input values in order of scheme configuration</param>
+        /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
         /// <param name="CheckOut">Optional. File copy will check-out as default.</param>
         /// <returns>Local path/filename</returns>
-        public string GetFileCopyBySourceFileNameAndAutoNumber(string VaultFullFileName, string NumberingScheme, string[] InputParams = null, bool CheckOut = true)
+        public string GetFileCopyBySourceFileNameAndAutoNumber(string VaultFullFileName, string NumberingScheme, string[] InputParams = null, bool CheckOut = true, bool UpdatePartNumber = true)
         {
             //Get Vault File object
             List<string> mFiles = new List<string>();
@@ -124,12 +133,33 @@ namespace QuickstartiLogicLibrary
             //create file iteration as copy from source
             VDF.Vault.Currency.Entities.FileIteration mFileIt = CreateFileCopy(mSourceFile, mNewFileName);
 
+            //Optionally update Partnumber property
+            if (UpdatePartNumber)
+            {
+                Dictionary<AWS.PropDef, object> mPropDictonary = new Dictionary<AWS.PropDef, object>();
+
+                AWS.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                AWS.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
+                mPropDictonary.Add(propDef, mNewNumber);
+
+                UpdateFileProperties((AWS.File)mFileIt, mPropDictonary);
+                mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
+            }
+
             //define download options, including DefaultAcquisitionOptions
-            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
             settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
 
             //download
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+            if (CheckOut)
+            {
+                //define checkout options and checkout
+                settings = CreateAcquireSettings(true);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                results = conn.FileManager.AcquireFiles(settings);
+            }
 
             //refine output
             if (results != null)
@@ -153,8 +183,9 @@ namespace QuickstartiLogicLibrary
         /// <param name="VaultFullFileName">Vault FullFilePath of source file</param>
         /// <param name="NewFileNameNoExt">New name without extension</param>
         /// <param name="CheckOut">Optional. File copy will check-out as default.</param>
+        /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
         /// <returns>Local path/filename</returns>
-        public string GetFileCopyBySourceFileNameAndNewName(string VaultFullFileName, string NewFileNameNoExt, bool CheckOut = true)
+        public string GetFileCopyBySourceFileNameAndNewName(string VaultFullFileName, string NewFileNameNoExt, bool CheckOut = true, bool UpdatePartNumber = true )
         {
             //get Vault File object
             List<string> mFiles = new List<string>();
@@ -168,12 +199,33 @@ namespace QuickstartiLogicLibrary
             //create file iteration as copy from source
             VDF.Vault.Currency.Entities.FileIteration mFileIt = CreateFileCopy(mSourceFile, mNewFileName);
 
+            //Optionally update Partnumber property
+            if (UpdatePartNumber)
+            {
+                Dictionary<AWS.PropDef, object> mPropDictonary = new Dictionary<AWS.PropDef, object>();
+
+                AWS.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                AWS.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
+                mPropDictonary.Add(propDef, mNewFileName);
+
+                UpdateFileProperties((AWS.File)mFileIt, mPropDictonary);
+                mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
+            }
+
             //build the download settings
-            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
             settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
 
             //download
             VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+            if (CheckOut)
+            {
+                //define checkout options and checkout
+                settings = CreateAcquireSettings(true);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                results = conn.FileManager.AcquireFiles(settings);
+            }
 
             //refine output
             if (results != null)
@@ -231,17 +283,27 @@ namespace QuickstartiLogicLibrary
                 VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFile));
 
                 //build download options including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                if (CheckOut)
+                {
+                    //define checkout options and checkout
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
 
                 //refine output
                 if (results != null)
                 {
                     try
                     {
-                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
+                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Where(n => n.File.EntityName == totalResults.FirstOrDefault().Name).FirstOrDefault();
+                        //return conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString();
                         return mFilesDownloaded.LocalPath.FullPath.ToString();
                     }
                     catch (Exception)
@@ -284,7 +346,8 @@ namespace QuickstartiLogicLibrary
                 }
             }
 
-            List<String> mFilesFound = new List<string>();
+            List<VDF.Vault.Currency.Entities.FileIteration> mFilesFound = new List<VDF.Vault.Currency.Entities.FileIteration>();
+            List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
             List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
             List<AWS.File> totalResults = new List<AWS.File>();
@@ -302,25 +365,53 @@ namespace QuickstartiLogicLibrary
             if (totalResults.Count >= 1)
             {
                 //build download options including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 foreach (AWS.File wsFile in totalResults)
                 {
                     VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
-
+                    //register file paths to validate downloaded ones later
+                    mFilesFound.Add(mFileIt);
                     settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                 }
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
 
-                //refine output
+                if (CheckOut)
+                {
+                    //define checkout options and checkout
+                    settings = CreateAcquireSettings(true);
+                    foreach (AWS.File wsFile in totalResults)
+                    {
+                        VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
+                        settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    }
+
+                    //checkout
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //refine and validate output
                 if (results.FileResults != null)
                 {
-                    foreach (var item in results.FileResults)
+                    foreach (VDF.Vault.Currency.Entities.FileIteration mFileIt in mFilesFound)
                     {
-                        mFilesFound.Add(item.LocalPath.FullPath.ToString());
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
                     }
-                    return mFilesFound;
+
+                    return mFilesDownloaded;
+
+                    //foreach (var item in results.FileResults)
+                    //{
+                    //    if (totalResults.Any(n=>n.Name == item.File.EntityName))
+                    //    {
+                    //        mFilesFound.Add(item.LocalPath.FullPath.ToString());
+                    //    }
+                    //}
+                    //return mFilesFound;
                 }
                 return null;
             }
@@ -341,10 +432,11 @@ namespace QuickstartiLogicLibrary
         /// <param name="NumberingScheme">Individual scheme name or 'Default'</param>
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
         /// <param name="InputParams">Optional according scheme definition. User input values in order of scheme configuration</param>
-        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
         /// <param name="CheckOut">Optional. File copy will check-out as default.</param>
+        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+        /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
         /// <returns>Local path/filenamen</returns>
-        public string GetFileCopyBySourceFileSearchAndAutoNumber(Dictionary<string, string> SearchCriteria, string NumberingScheme, bool MatchAllCriteria = true, string[] InputParams = null, bool CheckOut = true, string[] FoldersSearched = null)
+        public string GetFileCopyBySourceFileSearchAndAutoNumber(Dictionary<string, string> SearchCriteria, string NumberingScheme, bool MatchAllCriteria = true, string[] InputParams = null, bool CheckOut = true, string[] FoldersSearched = null, bool UpdatePartNumber = true)
         {
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
             AWS.Folder[] mFldr;
@@ -386,12 +478,34 @@ namespace QuickstartiLogicLibrary
                 //create new file iteration as copy of source file
                 VDF.Vault.Currency.Entities.FileIteration mFileIt = CreateFileCopy(mSourceFile, mNewFileName);
 
+                //Optionally pdate Partnumber property
+                if (UpdatePartNumber)
+                {                   
+                    Dictionary<AWS.PropDef, object> mPropDictonary = new Dictionary<AWS.PropDef, object>();
+
+                    AWS.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                    AWS.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
+                    mPropDictonary.Add(propDef, mNewNumber);
+
+                    UpdateFileProperties((AWS.File)mFileIt, mPropDictonary);
+                    mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
+                }
+
                 //define download options, including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                if (CheckOut)
+                {
+                    //define checkout options and checkout
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
                 //refine output
                 if (results != null)
                 {
@@ -427,8 +541,9 @@ namespace QuickstartiLogicLibrary
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
         /// <param name="CheckOut">Optional. File copy will check-out as default.</param>
         /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+        /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
         /// <returns>Local path/filename</returns>
-        public string GetFileCopyBySourceFileSearchAndNewName(Dictionary<string, string> SearchCriteria, string NewFileNameNoExt, bool MatchAllCriteria = true, bool CheckOut = true, string[] FoldersSearched = null)
+        public string GetFileCopyBySourceFileSearchAndNewName(Dictionary<string, string> SearchCriteria, string NewFileNameNoExt, bool MatchAllCriteria = true, bool CheckOut = true, string[] FoldersSearched = null, bool UpdatePartNumber = true)
         {
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
             AWS.Folder[] mFldr;
@@ -465,11 +580,34 @@ namespace QuickstartiLogicLibrary
                 string mNewFileName = String.Format("{0}{1}{2}", NewFileNameNoExt, ".", (mSourceFile.Name).Split('.').Last());
                 VDF.Vault.Currency.Entities.FileIteration mFileIt = CreateFileCopy(mSourceFile, mNewFileName);
 
+                //Optionally pdate Partnumber property
+                if (UpdatePartNumber)
+                {
+                    Dictionary<AWS.PropDef, object> mPropDictonary = new Dictionary<AWS.PropDef, object>();
+
+                    AWS.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                    AWS.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
+                    mPropDictonary.Add(propDef, mNewFileName);
+                    
+                    UpdateFileProperties((AWS.File)mFileIt, mPropDictonary);
+                    mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
+                }
+
                 //build download options, including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(CheckOut);
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                if (CheckOut)
+                {
+                    //define checkout options and checkout
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
                 //refine output
                 if (results != null)
                 {
@@ -623,7 +761,7 @@ namespace QuickstartiLogicLibrary
                     mSearchCond.PropDefId = mFilePropDef.Id;
                     mSearchCond.PropTyp = AWS.PropertySearchType.SingleProperty;
                     mSearchCond.SrchOper = 1; //equals
-                    if (i == 0) mSearchCond.SrchRule = AWS.SearchRuleType.May;
+                    if (i == 0) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
                     else
                     {
                         if (MatchAllCriteria) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
@@ -648,17 +786,17 @@ namespace QuickstartiLogicLibrary
             else
             {
                 settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeAttachments = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeLibraryContents = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.ReleaseBiased = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Revision;
+                settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
+                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
             }
-            settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
-            settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
-            settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeAttachments = true;
-            settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeLibraryContents = true;
-            settings.OptionsRelationshipGathering.FileRelationshipSettings.ReleaseBiased = true;
-            settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Revision;
-            settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-            VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-            mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-            mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
 
             return settings;
         }

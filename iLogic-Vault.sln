@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "iLogic-PDM", "iLogic-Vault\iLogic-PDM.vbproj", "{2929C461-4ECF-4ADD-9A96-904EA652B085}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iLogic-Vault QuickstarLibrary", "iLogic-Vault-QuickstartLibrary\iLogic-Vault QuickstarLibrary.csproj", "{BAB4F6A2-EAEF-4650-B11E-7A14466D74AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iLogic-Vault QuickstartLibrary", "iLogic-Vault-QuickstartLibrary\iLogic-Vault QuickstartLibrary.csproj", "{BAB4F6A2-EAEF-4650-B11E-7A14466D74AB}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "iLogicDEBUG", "iLogicDEBUG\iLogicDEBUG.vbproj", "{10A9D972-C9F4-4A12-BF4D-B7592AA9D2C6}"
 EndProject

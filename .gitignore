@@ -24,3 +24,9 @@
 /temp 2020/Autodesk.iLogic.Common.dll
 /temp 2020/Autodesk.iLogic.Automation.dll
 /iLogic-Vault-QuickstartLibrary/bin/x64/Debug
+/iLogic-Vault/obj/x64/Release
+/iLogicDEBUG/obj/Release/TempPE
+/iLogicDEBUG/obj/Release
+/iLogic-Vault-QuickstartLibrary/obj/x64/Release
+/iLogic-Vault-QuickstartLibrary/bin/x64/Release
+/iLogic-Vault-QuickstartLibrary/Autodesk.API-Sample-Signature.pfx
