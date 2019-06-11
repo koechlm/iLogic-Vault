@@ -49,9 +49,11 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\x64\Release\QuickstartiLogicLibrary.xml</DocumentationFile>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>Autodesk.API-Sample-Signature.pfx</AssemblyOriginatorKeyFile>
@@ -93,6 +95,7 @@
     <Reference Include="Connectivity.Application.VaultBase">
       <HintPath>..\temp 2020\Connectivity.Application.VaultBase.dll</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
