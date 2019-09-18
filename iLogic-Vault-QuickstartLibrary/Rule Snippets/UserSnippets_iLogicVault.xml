@@ -4,6 +4,16 @@
   <Snippets>
     <CodeSnippet>
       <Category>iLogicVault</Category>
+      <Name>iLogic-Vault Quickstart Header</Name>
+      <ToolTip>Reference to library.</ToolTip>
+      <Index>2021</Index>
+      <Code>
+        <![CDATA[AddReference "QuickstartiLogicLibrary.dll"
+]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
       <Name>iLogic Vault - Initialize</Name>
       <ToolTip>Adds the frame to connect and run Vault commands within rule</ToolTip>
       <Index>2002</Index>
@@ -56,6 +66,35 @@ End If]]>
 	Else
 		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
 		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Multiple Vault Files by Search</Name>
+      <ToolTip>Search 1 to many files and download all; optionally check-out.</ToolTip>
+      <Index>2015</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Part Number", "00100*")		'applies to files from 001000 to 001009
+	'...add as many as required to enable a unique search result
+	
+	'the list of downloaded files
+	Dim mVaultFiles As List(Of String)
+	'returns full file names in local working folder (download enforces override, if local file exists)
+	'returns null (nothing) if no files return		
+	mVaultFiles = iLogicVault.GetFilesBySearchCriteria(mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true, searching all folders
+	'prepare output
+	If mVaultFiles.Count = 0 Then
+		Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
+	ElseIf mVaultFiles.Count > 0 Then
+		Dim mFileList As String
+		For Each mFile As String In mVaultFiles
+			mFileList += mFile & vbCr
+		Next
+		Logger.Info("iLogic-Vault file search found: " & mFileList)
+		'so the files are there, do what ever you need to do consuming these...
 	End If]]>
       </Code>
     </CodeSnippet>
@@ -251,35 +290,6 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
 	Dim mFullFileName As String = ThisDoc.Document.FullFileName
 	'Call file copy The source file's location and extension are captured and apply to the copy. Returns local path/filename or error statement "LocalFileCopyFailed"
 	Dim mLocaFileCopy As String = iLogicVault.mCopyLocalFile(mFullFileName, mFileNumber)]]>
-      </Code>
-    </CodeSnippet>
-    <CodeSnippet>
-      <Category>iLogicVault</Category>
-      <Name>Get Multiple Vault Files (Searched)</Name>
-      <ToolTip>Search 1 to many files and download all; optionally check-out.</ToolTip>
-      <Index>2015</Index>
-      <Code>
-        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
-	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "00100*")		'applies to files from 001000 to 001009
-	'...add as many as required to enable a unique search result
-	
-	'the list of downloaded files
-	Dim mVaultFiles As List(Of String)
-	'returns full file names in local working folder (download enforces override, if local file exists)
-	'returns null (nothing) if no files return		
-	mVaultFiles = iLogicVault.GetFilesBySearchCriteria(mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true, searching all folders
-	'prepare output
-	If mVaultFiles.Count = 0 Then
-		Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
-	ElseIf mVaultFiles.Count > 0 Then
-		Dim mFileList As String
-		For Each mFile As String In mVaultFiles
-			mFileList += mFile & vbCr
-		Next
-		Logger.Info("iLogic-Vault file search found: " & mFileList)
-		'so the files are there, do what ever you need to do consuming these...
-	End If]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
