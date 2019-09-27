@@ -56,7 +56,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Autodesk.API-Sample-Signature.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
@@ -120,11 +121,12 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
+    <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Autodesk.API-Sample-Signature.pfx" />
-    <None Include="Inventor iLogic - Vault Quickstart Library - 2020.2.0.pdf" />
+    <None Include="Inventor iLogic - Vault Quickstart Library - 2020.2.1.pdf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

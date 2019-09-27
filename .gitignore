@@ -30,3 +30,5 @@
 /iLogic-Vault-QuickstartLibrary/obj/x64/Release
 /iLogic-Vault-QuickstartLibrary/bin/x64/Release
 /iLogic-Vault-QuickstartLibrary/Autodesk.API-Sample-Signature.pfx
+*.cache
+/iLogic-Vault-QuickstartLibrary/QuickstartiLogicLibrary2020.25.2.1.zip
