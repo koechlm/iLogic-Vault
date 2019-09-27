@@ -18,7 +18,7 @@ Sub Main
 	'Build one to many name/value pairs of Property/Value as search criteria;
 		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
 		mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-		mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+		mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt
 		'...add as many as required to enable a unique search result
 	
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;

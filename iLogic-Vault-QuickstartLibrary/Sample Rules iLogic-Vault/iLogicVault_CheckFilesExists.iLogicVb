@@ -13,11 +13,11 @@ Sub Main
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
-	
+
 	'Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "00100234")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
+	mSearchParams.Add("Title", "Back Side Cover*") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
 	
 	Dim mVaultFiles As List(Of String)
@@ -27,7 +27,7 @@ Sub Main
 	ElseIf mVaultFiles.Count > 0 Then
 		Dim mFileList As String
 		For Each mFile As String In mVaultFiles
-			mFileList += mFile & vbCr
+			mFileList += vbCr & mFile
 		Next
 		Logger.Info("iLogic-Vault file search found: " & mFileList)
 	End If

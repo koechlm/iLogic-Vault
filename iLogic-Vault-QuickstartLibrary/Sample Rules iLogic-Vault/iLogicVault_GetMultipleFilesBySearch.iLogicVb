@@ -31,7 +31,7 @@ Sub Main
 	ElseIf mVaultFiles.Count > 0 Then
 		Dim mFileList As String
 		For Each mFile As String In mVaultFiles
-			mFileList += mFile & vbCr
+			mFileList += vbCr & mFile 
 		Next
 		Logger.Info("iLogic-Vault file search found: " & mFileList)
 		'so the files are there, do what ever you need to do consuming these...

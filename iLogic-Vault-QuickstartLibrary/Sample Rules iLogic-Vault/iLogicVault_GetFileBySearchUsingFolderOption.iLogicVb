@@ -17,7 +17,7 @@ Sub Main
 	'Build one to many name/value pairs of Property/Value as search criteria
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
 	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	mSearchParams.Add("Title", "Back Side Cover*") 	'applies to file 001002.ipt and to file 001068.iam
 	'...add as many as required to enable a unique search result
 
 	'optionally build an array of folders to search in. If we don't all folders are searched. So it's good practice adding the Inventor relevant folders as a default

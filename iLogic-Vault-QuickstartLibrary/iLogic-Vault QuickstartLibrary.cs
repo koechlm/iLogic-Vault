@@ -760,13 +760,9 @@ namespace QuickstartiLogicLibrary
                 {
                     mSearchCond.PropDefId = mFilePropDef.Id;
                     mSearchCond.PropTyp = AWS.PropertySearchType.SingleProperty;
-                    mSearchCond.SrchOper = 1; //equals
-                    if (i == 0) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
-                    else
-                    {
-                        if (MatchAllCriteria) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
-                        else mSearchCond.SrchRule = AWS.SearchRuleType.May;
-                    }
+                    mSearchCond.SrchOper = 3; //equals
+                    if (MatchAllCriteria) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
+                    else mSearchCond.SrchRule = AWS.SearchRuleType.May;
                     mSearchCond.SrchTxt = item.Value;
                 }
                 mSrchConds.Add(mSearchCond);
