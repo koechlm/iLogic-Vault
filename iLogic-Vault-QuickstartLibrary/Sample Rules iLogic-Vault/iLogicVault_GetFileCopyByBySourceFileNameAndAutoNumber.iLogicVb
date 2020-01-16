@@ -7,7 +7,7 @@
 
 Sub Main
 	Break
-	'Sample based on Vault "INV-Samples" available; adopt search criteria or file path(s) below according other Vault's content.
+	'Sample based on Vault "PDMC-Sample" available; adopt search criteria or file path(s) below according other Vault's content.
 	
 	'enable iLogicVault commands and validate user's login state
 	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib

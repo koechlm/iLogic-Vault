@@ -6,7 +6,7 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	'Sample based on Vault "INV-Samples" available; adopt search criteria or file path(s) below according other Vault's content.
+	'Sample based on Vault "PDMC-Sample" available; adopt search criteria or file path(s) below according other Vault's content.
 	
 		'enable iLogicVault commands and validate user's login state
 	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
