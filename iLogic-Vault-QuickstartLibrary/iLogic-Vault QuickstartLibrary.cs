@@ -5,6 +5,7 @@ using System.Linq;
 
 using ACET = Autodesk.Connectivity.Explorer.ExtensibilityTools;
 using AWS = Autodesk.Connectivity.WebServices;
+using AWT = Autodesk.Connectivity.WebServicesTools;
 using VDF = Autodesk.DataManagement.Client.Framework;
 using VltBase = Connectivity.Application.VaultBase;
 
@@ -27,15 +28,18 @@ namespace QuickstartiLogicLibrary
         /// Any Vault interaction requires an active Client-Server connection.
         /// To avoid Vault API specific references, check connection state using the loggedIn property.
         /// </summary>
-        private VDF.Vault.Currency.Connections.Connection conn = VltBase.ConnectionManager.Instance.Connection;
+        private VDF.Vault.Currency.Connections.Connection conn;
 
         /// <summary>
-        /// Property representing the current user's Vault connection state; returns true, if current user is logged in.
+        /// For Inventor Application only: Initializes the reuse of the Inventor user's Vault Log-in for iLogic-Vault interactions within rules.
         /// </summary>
+        /// <returns>Returns true, if connection is valid</returns>
         public bool LoggedIn
         {
             get
             {
+                conn = VltBase.ConnectionManager.Instance.Connection;
+
                 if (conn != null)
                 {
                     return true;
@@ -44,6 +48,32 @@ namespace QuickstartiLogicLibrary
             }
         }
 
+
+        /// <summary>
+        /// For VaultInventorServer application only: Re-uses the job processors log-in user Id and ticket for iLogic-Vault interactions within rules.
+        /// </summary>
+        /// <param name="DbSrvName"></param>
+        /// <param name="FlSrvName"></param>
+        /// <param name="VaultName"></param>
+        /// <param name="UserId"></param>
+        /// <param name="Ticket"></param>
+        /// <returns>Returns true, if connection is valid</returns>
+        public bool ReuseConnection(string DbSrvName, string FlSrvName, string VaultName, long UserId, string Ticket)
+        {
+            AWS.ServerIdentities mSrvIdnts = new AWS.ServerIdentities();
+            mSrvIdnts.DataServer = DbSrvName;
+            mSrvIdnts.FileServer = FlSrvName;
+            AWT.UserIdTicketCredentials mCred = new AWT.UserIdTicketCredentials(mSrvIdnts, VaultName, UserId, Ticket);
+            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = new AWT.WebServiceManager(mCred);
+            VDF.Vault.Currency.Connections.Connection mConnection = new VDF.Vault.Currency.Connections.Connection(
+                mWsMgr, VaultName, UserId, DbSrvName, VDF.Vault.Currency.Connections.AuthenticationFlags.Standard);
+            if (mConnection != null)
+            {
+                conn = mConnection;
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Deprecated. Returns current Vault connection. Leverage loggedIn property whenever possible. 
