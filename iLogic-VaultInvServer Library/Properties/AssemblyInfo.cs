@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("QuickstartiLogicLibrary")]
-[assembly: AssemblyDescription("Technical Sales EMEA Quickstart Libraries - Vault Functions for iLogic Rules")]
+[assembly: AssemblyTitle("iLogic-VaultInventorServer Library")]
+[assembly: AssemblyDescription("TS EMEA Quickstart Libraries - Vault Functions for Inventor Server iLogic Rules")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Autodesk GmbH")]
-[assembly: AssemblyProduct("QuickstartiLogicLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2019 Autodesk, Markus Koechl")]
+[assembly: AssemblyProduct("iLogic-VaultInvServer Library")]
+[assembly: AssemblyCopyright("Copyright © 2020 Autodesk, Markus Koechl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("bab4f6a2-eaef-4650-b11e-7a14466d74ab")]
+[assembly: Guid("d52a41bf-f382-4d83-a3ac-1ff171c5056b")]
 
 // Version information for an assembly consists of the following four values:
 //

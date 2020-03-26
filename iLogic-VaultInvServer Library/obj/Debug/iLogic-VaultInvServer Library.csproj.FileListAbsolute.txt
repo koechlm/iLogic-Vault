@@ -1,0 +1,10 @@
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\Debug\QuickstartiLogicVltInvSrvLibrary.dll
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\Debug\QuickstartiLogicVltInvSrvLibrary.pdb
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\Debug\QuickstartiLogicLibrary.dll
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\Debug\QuickstartiLogicLibrary.pdb
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\Debug\QuickstartiLogicLibrary.xml
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\Debug\iLogic-VaultInvServer Library.csprojAssemblyReference.cache
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\Debug\iLogic-VaultInvServer Library.csproj.CoreCompileInputs.cache
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\Debug\iLogic-VaultInvServer Library.csproj.CopyComplete
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\Debug\QuickstartiLogicVltInvSrvLibrary.dll
+C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\Debug\QuickstartiLogicVltInvSrvLibrary.pdb

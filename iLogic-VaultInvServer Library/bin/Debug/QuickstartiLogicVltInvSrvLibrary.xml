@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>QuickstartiLogicVltInvSrvLibrary</name>
+    </assembly>
+    <members>
+        <member name="T:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary">
+            <summary>
+            Collection of functions querying and downloading Vault files for iLogic on Inventor Server.
+            Note - this collection is a subset of the Quickstart iLogic-Vault Library and includes only methods to download files;
+            methods to create new files are excluded because iLogic for Inventor Server is not entitled to check-in new files.
+            </summary>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.Dispose">
+            <summary>
+            Empty function, prepared to dispose data if future additions require.
+            </summary>
+        </member>
+        <member name="F:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.conn">
+            <summary>
+            Any Vault interaction requires an active Client-Server connection.
+            </summary>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.ReuseConnection(System.String,System.String,System.String,System.Int64,System.String)">
+            <summary>
+            For VaultInventorServer application only: Re-uses the job processors log-in user Id and ticket for iLogic-Vault interactions within rules.
+            </summary>
+            <param name="DbSrvName"></param>
+            <param name="FlSrvName"></param>
+            <param name="VaultName"></param>
+            <param name="UserId"></param>
+            <param name="Ticket"></param>
+            <returns>Returns true, if connection is valid</returns>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.GetFileByFullFilePath(System.String,System.Boolean)">
+            <summary>
+            Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder (download enforces override, if local file exists),
+            returns "FileNotFound if file does not exist at indicated location.
+            Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+            </summary>
+            <param name="VaultFullFileName">Full Vault File Path of format '$\...\*.*'</param>
+            <param name="CheckOut">Optional. File downloaded does NOT check-out as default.</param>
+            <returns>Local path/filename</returns>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.GetFileBySearchCriteria(System.Collections.Generic.Dictionary{System.String,System.String},System.Boolean,System.Boolean,System.String[])">
+            <summary>
+            Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+            Downloads first file matching all or any search criterias. 
+            Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
+            Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+            </summary>
+            <param name="SearchCriteria">Dictionary of property/value pairs</param>
+            <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+            <param name="CheckOut">Optional. File downloaded does NOT check-out as default</param>
+            <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+            <returns>Local path/filename</returns>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.GetFilesBySearchCriteria(System.Collections.Generic.Dictionary{System.String,System.String},System.Boolean,System.Boolean,System.String[])">
+            <summary>
+            Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+            Downloads all files found, matching the criteria. Returns array of full file names of downloaded files
+            Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+            </summary>
+            <param name="SearchCriteria">Dictionary of property/value pairs</param>
+            <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+            <param name="CheckOut">Optional. Downloaded files will NOT check-out as default.</param>
+            <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+            <returns>Array of file names found</returns>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.GetThumbnailFileByFullSourceFilePath(System.String,System.Int32,System.Int32)">
+            <summary>
+            Download Thumbnail Image of the given file as Image file.
+            </summary>
+            <param name="VaultFullFileName">Full Vault source file path of format '$\...\*.*'</param>
+            <param name="Width">Optional. Image pixel size</param>
+            <param name="Height">Optional. Image pixel size.</param>
+            <returns>Full file path of image file (*.jpg)</returns>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.GetThumbnailFileBySearchCriteria(System.Collections.Generic.Dictionary{System.String,System.String},System.Boolean,System.String[],System.Int32,System.Int32)">
+            <summary>
+            Download Thumbnail Image of the file searched as Image file.
+            </summary>
+            <param name="SearchCriteria">Dictionary of property/value pairs</param>
+            <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+            <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+            <param name="Width">Optional. Image pixel size</param>
+            <param name="Height">Optional. Image pixel size.</param>
+            <returns>Full file path of image file (*.jpg)</returns>
+        </member>
+        <member name="M:QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary.RenderThumbnailToImage(Autodesk.DataManagement.Client.Framework.Vault.Currency.Properties.ThumbnailInfo,System.Int32,System.Int32)">
+            <summary>
+            Vault Blog Sample function to convert legacy meta file format and image file format (added to Vault 2013 and later)
+            </summary>
+            <param name="value">Vault Image property types return ThumbnailInfo</param>
+            <param name="width">recommended max. size = 300, but custom thumbnails may be larger</param>
+            <param name="height">recommended max. size = 300, but custom thumbnails may be larger</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
