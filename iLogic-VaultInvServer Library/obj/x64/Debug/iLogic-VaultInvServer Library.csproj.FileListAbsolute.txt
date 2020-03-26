@@ -1,6 +1,0 @@
-C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\x64\Debug\QuickstartiLogicVltInvSrvLibrary.dll
-C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\x64\Debug\QuickstartiLogicVltInvSrvLibrary.pdb
-C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\bin\x64\Debug\QuickstartiLogicVltInvSrvLibrary.xml
-C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\x64\Debug\iLogic-VaultInvServer Library.csproj.CoreCompileInputs.cache
-C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\x64\Debug\QuickstartiLogicVltInvSrvLibrary.dll
-C:\Users\koechlm\source\iLogic-Vault\iLogic-VaultInvServer Library\obj\x64\Debug\QuickstartiLogicVltInvSrvLibrary.pdb
