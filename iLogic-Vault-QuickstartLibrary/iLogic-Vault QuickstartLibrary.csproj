@@ -61,42 +61,24 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Autodesk Vault 2020 SDK\bin\x64\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.Connectivity.WebServices">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Autodesk Vault 2020 SDK\bin\x64\Autodesk.Connectivity.WebServices.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.Connectivity.WebServices.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Autodesk Vault 2020 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.DataManagement.Client.Framework.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework.Vault">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Autodesk Vault 2020 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.iLogic.Automation">
-      <HintPath>..\temp 2020\Autodesk.iLogic.Automation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.iLogic.Common">
-      <HintPath>..\temp 2020\Autodesk.iLogic.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.iLogic.Interfaces">
-      <HintPath>..\temp 2020\Autodesk.iLogic.Interfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.Inventor.Interop, Version=23.1.0.0, Culture=neutral, PublicKeyToken=d84147f8b4276564, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\temp 2020\Autodesk.Inventor.Interop.dll</HintPath>
     </Reference>
     <Reference Include="Connectivity.Application.VaultBase">
-      <HintPath>..\temp 2020\Connectivity.Application.VaultBase.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Connectivity.Application.VaultBase.dll</HintPath>
       <Private>False</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -126,7 +108,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Inventor iLogic - Vault Quickstart Library - 2020.2.1.pdf" />
+    <None Include="Inventor iLogic - Vault Quickstart Library.pdf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

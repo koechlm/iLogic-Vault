@@ -18,7 +18,8 @@ Sub Main
 	If mImageFile Is Nothing Then
 		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
 	Else
-			''add next action using the downloaded file here...
+		Logger.Info("File " & mImageFile & " found by full file name and downloaded to local workspace.")
+		''add next action using the downloaded file here...
 			
 	End If
 End Sub

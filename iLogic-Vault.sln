@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2003
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "iLogic-PDM", "iLogic-Vault\iLogic-PDM.vbproj", "{2929C461-4ECF-4ADD-9A96-904EA652B085}"
 EndProject
@@ -10,6 +10,11 @@ EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "iLogicDEBUG", "iLogicDEBUG\iLogicDEBUG.vbproj", "{10A9D972-C9F4-4A12-BF4D-B7592AA9D2C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iLogic-VaultInvServer Library", "iLogic-VaultInvServer Library\iLogic-VaultInvServer Library.csproj", "{D52A41BF-F382-4D83-A3AC-1FF171C5056B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F107EC0A-5BE1-4475-8B96-764A0F847C26}"
+	ProjectSection(SolutionItems) = preProject
+		Inventor iLogic - Vault Quickstart Library.pdf = Inventor iLogic - Vault Quickstart Library.pdf
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
