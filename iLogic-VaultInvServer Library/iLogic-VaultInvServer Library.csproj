@@ -51,6 +51,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\x64\Release\QuickstartiLogicVltInvSrvLibrary.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Connectivity.WebServices">
@@ -66,7 +67,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.iLogic.Interfaces">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Professional 2020\Explorer\Inventor Server\Bin\Autodesk.iLogic.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\..\..\ProgramData\Autodesk\Inventor 2020\_LibrariesForVisualStudio\Autodesk.iLogic.Interfaces.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

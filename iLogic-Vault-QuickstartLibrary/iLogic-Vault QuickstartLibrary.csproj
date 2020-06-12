@@ -76,27 +76,30 @@
       <HintPath>..\..\..\..\..\Program Files\Autodesk\Autodesk Vault 2020 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Autodesk.iLogic.Automation">
-      <HintPath>..\temp 2020\Autodesk.iLogic.Automation.dll</HintPath>
+    <Reference Include="Autodesk.iLogic.Automation, Version=24.30.37300.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Autodesk\Inventor 2020\_LibrariesForVisualStudio\Autodesk.iLogic.Automation.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Autodesk.iLogic.Common">
-      <HintPath>..\temp 2020\Autodesk.iLogic.Common.dll</HintPath>
+    <Reference Include="Autodesk.iLogic.Common, Version=24.30.37300.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Autodesk\Inventor 2020\_LibrariesForVisualStudio\Autodesk.iLogic.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Autodesk.iLogic.Interfaces">
-      <HintPath>..\temp 2020\Autodesk.iLogic.Interfaces.dll</HintPath>
+    <Reference Include="Autodesk.iLogic.Interfaces, Version=24.30.37300.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Autodesk\Inventor 2020\_LibrariesForVisualStudio\Autodesk.iLogic.Interfaces.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Autodesk.Inventor.Interop, Version=23.1.0.0, Culture=neutral, PublicKeyToken=d84147f8b4276564, processorArchitecture=MSIL">
+    <Reference Include="Autodesk.Inventor.Interop, Version=24.2.0.0, Culture=neutral, PublicKeyToken=d84147f8b4276564, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\temp 2020\Autodesk.Inventor.Interop.dll</HintPath>
+      <HintPath>..\..\..\..\..\ProgramData\Autodesk\Inventor 2020\_LibrariesForVisualStudio\Autodesk.Inventor.Interop.dll</HintPath>
     </Reference>
-    <Reference Include="Connectivity.Application.VaultBase">
-      <HintPath>..\temp 2020\Connectivity.Application.VaultBase.dll</HintPath>
+    <Reference Include="Connectivity.Application.VaultBase, Version=25.3.22.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Autodesk\Inventor 2020\_LibrariesForVisualStudio\Connectivity.Application.VaultBase.dll</HintPath>
       <Private>False</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -126,7 +129,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Inventor iLogic - Vault Quickstart Library - 2020.2.1.pdf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
