@@ -696,11 +696,6 @@ namespace QuickstartiLogicLibrary
         public string GetNewNumber(string mSchmName, string[] mSchmPrms = null)
         {
             AWS.NumSchm NmngSchm = null;
-            if (mSchmPrms == null)
-            {
-                mSchmPrms = Array.Empty<string>();
-            }
-
             try
             {
                 if (mSchmName == "Default")
@@ -711,7 +706,7 @@ namespace QuickstartiLogicLibrary
                 {
                     NmngSchm = conn.WebServiceManager.NumberingService.GetNumberingSchemes("FILE", AWS.NumSchmType.Activated).First(n => n.Name == mSchmName);
                 }
-                return conn.WebServiceManager.DocumentService.GenerateFileNumber(NmngSchm.SchmID, null);
+                return conn.WebServiceManager.DocumentService.GenerateFileNumber(NmngSchm.SchmID, mSchmPrms);
             }
             catch (Exception)
             {
