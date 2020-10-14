@@ -6,19 +6,20 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
+
 	'enable iLogicVault commands and validate user's login state
 	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
-	ElseIf iLogicVault.LoggedIn = True Then
-		Try
-			ThisDoc.Save
-			Dim oControlDef As Inventor.ControlDefinition
-			oControlDef = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckinTop")
-			oControlDef.Execute2(True)
-		Catch ex As Exception
-			Logger.Error("Undo Check-In failed; likely, the file wasn't checked out.")
-		End Try
+	End If
+	
+	Dim mImageFile As String = iLogicVault.GetThumbnailFileByFullSourceFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt", 254, 254)
+	If mImageFile Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+		Logger.Info("File " & mImageFile & " found by full file name and downloaded to local workspace.")
+		''add next action using the downloaded file here...
+			
 	End If
 End Sub

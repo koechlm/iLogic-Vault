@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Autodesk GmbH")]
 [assembly: AssemblyProduct("QuickstartiLogicLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2018 Autodesk, Markus Koechl")]
+[assembly: AssemblyCopyright("Copyright ©  2020 Autodesk, Markus Koechl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2019.24.1.6")]
-[assembly: AssemblyFileVersion("2019.24.1.6")]
+[assembly: AssemblyVersion("2019.24.2.0")]
+[assembly: AssemblyFileVersion("2019.24.2.0")]

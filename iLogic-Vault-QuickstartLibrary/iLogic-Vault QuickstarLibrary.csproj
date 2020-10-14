@@ -49,37 +49,20 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
+      <HintPath>2019 Vault SDK\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Autodesk.Connectivity.WebServices">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Vault Professional 2019\Explorer\Autodesk.Connectivity.WebServices.dll</HintPath>
+      <HintPath>2019 Vault SDK\Autodesk.Connectivity.WebServices.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Vault Professional 2019\Explorer\Autodesk.DataManagement.Client.Framework.dll</HintPath>
+      <HintPath>2019 Vault SDK\Autodesk.DataManagement.Client.Framework.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework.Vault">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Vault Professional 2019\Explorer\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.iLogic.Automation">
-      <HintPath>C:\Program Files\Autodesk\Inventor 2019\Bin\Autodesk.iLogic.Automation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.iLogic.Common">
-      <HintPath>C:\Program Files\Autodesk\Inventor 2019\Bin\Autodesk.iLogic.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.iLogic.Interfaces">
-      <HintPath>C:\Program Files\Autodesk\Inventor 2019\Bin\Autodesk.iLogic.Interfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Autodesk.Inventor.Interop, Version=23.0.0.0, Culture=neutral, PublicKeyToken=d84147f8b4276564, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>C:\Program Files\Autodesk\Inventor 2019\Bin\Public Assemblies\Autodesk.Inventor.Interop.dll</HintPath>
-    </Reference>
-    <Reference Include="Connectivity.Application.VaultBase">
-      <HintPath>C:\Program Files\Autodesk\Inventor 2019\Bin\Connectivity.Application.VaultBase.dll</HintPath>
+      <HintPath>2019 Vault SDK\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -98,24 +81,26 @@
     <Compile Include="iLogic-Vault QuickstartLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml" />
+    <Folder Include="Rule Snippets\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Inventor iLogic - Vault Quickstart Library.pptx" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckIn.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckOut.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByPath.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePath.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchUsingFolderOption.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyByBySourceFileNameAndAutoNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndAutoNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndNewName.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber_&amp;_CopyLocalFile.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetMultipleFilesBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySourceFullFilePath.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySearch.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySourceFullFilePath.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
