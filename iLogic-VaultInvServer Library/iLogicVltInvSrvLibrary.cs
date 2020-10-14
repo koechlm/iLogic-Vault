@@ -67,6 +67,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
         public string GetFileByFullFilePath(string VaultFullFileName, bool CheckOut = false)
         {
             List<string> mFiles = new List<string>();
+            List<string> mFilesDownloaded = new List<string>();
             mFiles.Add(VaultFullFileName);
             AWS.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
@@ -86,13 +87,18 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 results = conn.FileManager.AcquireFiles(settings);
             }
 
-            //refine output
+            //refine and validate output
             if (results != null)
             {
                 try
                 {
-                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+
+                    return mFilesDownloaded[0];
+
                 }
                 catch (Exception)
                 {
@@ -128,6 +134,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
             }
 
             List<String> mFilesFound = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
             List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
             List<AWS.File> totalResults = new List<AWS.File>();
@@ -162,14 +169,18 @@ namespace QuickstartiLogicVltInvSrvLibrary
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine output
+                //refine and validate output
                 if (results != null)
                 {
                     try
                     {
-                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Where(n => n.File.EntityName == totalResults.FirstOrDefault().Name).FirstOrDefault();
-                        //return conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString();
-                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+
+                        return mFilesDownloaded[0];
+
                     }
                     catch (Exception)
                     {
