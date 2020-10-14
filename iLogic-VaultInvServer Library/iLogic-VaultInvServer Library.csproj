@@ -80,5 +80,9 @@
     <Compile Include="iLogicVltInvSrvLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Rule Snippets\UserSnippets_iLogicVaultInventorServer.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
