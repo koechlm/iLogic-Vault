@@ -839,7 +839,7 @@ namespace QuickstartiLogicLibrary
             long mTargetFldId = mSourceFile.FolderId;
 
             AWS.PropWriteResults mResults = new AWS.PropWriteResults();
-            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
+            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, true, null, out mResults);
             AWS.ByteArray mByteArray = new AWS.ByteArray();
             mByteArray.Bytes = mUploadTicket;
 

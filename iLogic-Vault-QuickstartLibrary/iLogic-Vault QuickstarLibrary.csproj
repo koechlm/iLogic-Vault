@@ -65,6 +65,11 @@
       <HintPath>2019 Vault SDK\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Connectivity.Application.VaultBase, Version=24.3.24.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>2019 Vault SDK\Connectivity.Application.VaultBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -85,23 +90,64 @@
     <Folder Include="Rule Snippets\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckIn.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckOut.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePath.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearch.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchUsingFolderOption.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyByBySourceFileNameAndAutoNumber.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndAutoNumber.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndNewName.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber_&amp;_CopyLocalFile.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetMultipleFilesBySearch.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySearch.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySourceFullFilePath.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySearch.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySourceFullFilePath.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckIn.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckOut.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePath.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearch.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchUsingFolderOption.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyByBySourceFileNameAndAutoNumber.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndAutoNumber.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndNewName.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber_&amp;_CopyLocalFile.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetMultipleFilesBySearch.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySearch.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySourceFullFilePath.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySearch.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySourceFullFilePath.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="2019 Vault SDK\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll" />
+    <Content Include="2019 Vault SDK\Autodesk.Connectivity.WebServices.dll" />
+    <Content Include="2019 Vault SDK\Autodesk.DataManagement.Client.Framework.dll" />
+    <Content Include="2019 Vault SDK\Autodesk.DataManagement.Client.Framework.Vault.dll" />
+    <Content Include="2019 Vault SDK\Connectivity.Application.VaultBase.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
