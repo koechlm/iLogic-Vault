@@ -70,6 +70,7 @@ namespace QuickstartiLogicLibrary
         public string GetFileByFullFilePath(string VaultFullFileName, bool CheckOut = false)
         {
             List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             mFiles.Add(VaultFullFileName);
             AWS.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
@@ -89,13 +90,18 @@ namespace QuickstartiLogicLibrary
                 results = conn.FileManager.AcquireFiles(settings);
             }
 
-            //refine output
+            //refine and validate output
             if (results != null)
             {
                 try
                 {
-                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+
+                    return mFilesDownloaded[0];
+
                 }
                 catch (Exception)
                 {
@@ -120,6 +126,7 @@ namespace QuickstartiLogicLibrary
         {
             //Get Vault File object
             List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             mFiles.Add(VaultFullFileName);
             AWS.File mSourceFile = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray()).First();
 
@@ -161,12 +168,17 @@ namespace QuickstartiLogicLibrary
                 results = conn.FileManager.AcquireFiles(settings);
             }
 
-            //refine output
+            //refine and validate output
             if (results != null)
                 try
                 {
-                    VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                    return mFilesDownloaded.LocalPath.FullPath.ToString();
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+
+                    return mFilesDownloaded[0];
+
                 }
                 catch (Exception)
                 {
@@ -185,10 +197,11 @@ namespace QuickstartiLogicLibrary
         /// <param name="CheckOut">Optional. File copy will check-out as default.</param>
         /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
         /// <returns>Local path/filename</returns>
-        public string GetFileCopyBySourceFileNameAndNewName(string VaultFullFileName, string NewFileNameNoExt, bool CheckOut = true, bool UpdatePartNumber = true )
+        public string GetFileCopyBySourceFileNameAndNewName(string VaultFullFileName, string NewFileNameNoExt, bool CheckOut = true, bool UpdatePartNumber = true)
         {
             //get Vault File object
             List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             mFiles.Add(VaultFullFileName);
             AWS.File mSourceFile = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray()).First();
 
@@ -227,11 +240,23 @@ namespace QuickstartiLogicLibrary
                 results = conn.FileManager.AcquireFiles(settings);
             }
 
-            //refine output
+            //refine and validate output
             if (results != null)
             {
-                VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                return mFilesDownloaded.LocalPath.FullPath.ToString();
+                try
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+
+                    return mFilesDownloaded[0];
+
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
             }
             return null;
         }
@@ -263,6 +288,7 @@ namespace QuickstartiLogicLibrary
             }
 
             List<String> mFilesFound = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
             List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
             List<AWS.File> totalResults = new List<AWS.File>();
@@ -285,7 +311,7 @@ namespace QuickstartiLogicLibrary
                 //build download options including DefaultAcquisitionOptions
                 VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                
+
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
 
@@ -297,14 +323,18 @@ namespace QuickstartiLogicLibrary
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine output
+                //refine and validate output
                 if (results != null)
                 {
                     try
                     {
-                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Where(n => n.File.EntityName == totalResults.FirstOrDefault().Name).FirstOrDefault();
-                        //return conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString();
-                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+
+                        return mFilesDownloaded[0];
+
                     }
                     catch (Exception)
                     {
@@ -403,17 +433,10 @@ namespace QuickstartiLogicLibrary
                     }
 
                     return mFilesDownloaded;
-
-                    //foreach (var item in results.FileResults)
-                    //{
-                    //    if (totalResults.Any(n=>n.Name == item.File.EntityName))
-                    //    {
-                    //        mFilesFound.Add(item.LocalPath.FullPath.ToString());
-                    //    }
-                    //}
-                    //return mFilesFound;
                 }
+
                 return null;
+
             }
             else
             {
@@ -451,6 +474,7 @@ namespace QuickstartiLogicLibrary
             }
 
             List<String> mFilesFound = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
             List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
             List<AWS.File> totalResults = new List<AWS.File>();
@@ -480,7 +504,7 @@ namespace QuickstartiLogicLibrary
 
                 //Optionally pdate Partnumber property
                 if (UpdatePartNumber)
-                {                   
+                {
                     Dictionary<AWS.PropDef, object> mPropDictonary = new Dictionary<AWS.PropDef, object>();
 
                     AWS.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
@@ -506,13 +530,18 @@ namespace QuickstartiLogicLibrary
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine output
+                //refine and validate output
                 if (results != null)
                 {
                     try
                     {
-                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+
+                        return mFilesDownloaded[0];
+
                     }
                     catch (Exception)
                     {
@@ -558,6 +587,7 @@ namespace QuickstartiLogicLibrary
             }
 
             List<String> mFilesFound = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
             List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
             List<AWS.File> totalResults = new List<AWS.File>();
@@ -588,7 +618,7 @@ namespace QuickstartiLogicLibrary
                     AWS.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
                     AWS.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                     mPropDictonary.Add(propDef, mNewFileName);
-                    
+
                     UpdateFileProperties((AWS.File)mFileIt, mPropDictonary);
                     mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
                 }
@@ -596,7 +626,7 @@ namespace QuickstartiLogicLibrary
                 //build download options, including DefaultAcquisitionOptions
                 VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                
+
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
 
@@ -608,13 +638,18 @@ namespace QuickstartiLogicLibrary
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine output
+                //refine and validate output
                 if (results != null)
                 {
                     try
                     {
-                        VDF.Vault.Results.FileAcquisitionResult mFilesDownloaded = results.FileResults.Last();
-                        return mFilesDownloaded.LocalPath.FullPath.ToString();
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+
+                        return mFilesDownloaded[0];
+
                     }
                     catch (Exception)
                     {
