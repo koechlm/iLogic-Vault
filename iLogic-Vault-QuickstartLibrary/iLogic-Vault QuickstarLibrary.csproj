@@ -87,9 +87,7 @@
     <Compile Include="iLogic-Vault QuickstartLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Rule Snippets\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -149,6 +147,9 @@
     <Content Include="2019 Vault SDK\Autodesk.DataManagement.Client.Framework.dll" />
     <Content Include="2019 Vault SDK\Autodesk.DataManagement.Client.Framework.Vault.dll" />
     <Content Include="2019 Vault SDK\Connectivity.Application.VaultBase.dll" />
+    <Content Include="Rule Snippets\UserSnippets_iLogicVault.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
