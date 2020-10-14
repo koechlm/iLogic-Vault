@@ -82,7 +82,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="Rule Snippets\UserSnippets_iLogicVaultInventorServer.xml" />
+    <Content Include="Rule Snippets\UserSnippets_iLogicVaultInventorServer.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
