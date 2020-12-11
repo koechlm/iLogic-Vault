@@ -112,6 +112,129 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
+        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder(download enforces override, if local file exists),
+        /// returns nothing if the file does not exist at indicated location.
+        /// File Properties return all values converted to text. Access the value using the Vault property display name as key.
+        /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// </summary>
+        /// <param name="VaultFullFileName"></param>
+        /// <param name="VaultFileProperties"></param>
+        /// <param name="CheckOut"></param>
+        /// <returns></returns>
+        public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties, bool CheckOut = false)
+        {
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            AWS.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            //define download options, including DefaultAcquisitionOptions
+            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+            //download
+            VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+            if (CheckOut)
+            {
+                //define checkout options and checkout
+                settings = CreateAcquireSettings(true);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                results = conn.FileManager.AcquireFiles(settings);
+            }
+
+            //refine and validate output
+            if (results != null)
+            {
+                try
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+
+                    //collect file properties
+                    mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                    return mFilesDownloaded[0];
+
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="VaultFullFileName"></param>
+        /// <param name="VaultFileProperties"></param>
+        /// <param name="VaultItemProperties"></param>
+        /// <param name="CheckOut"></param>
+        /// <returns></returns>
+        public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties,
+            ref Dictionary<string, string> VaultItemProperties, bool CheckOut = false)
+        {
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            AWS.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            //define download options, including DefaultAcquisitionOptions
+            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+            //download
+            VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+            if (CheckOut)
+            {
+                //define checkout options and checkout
+                settings = CreateAcquireSettings(true);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                results = conn.FileManager.AcquireFiles(settings);
+            }
+
+            //refine and validate output
+            if (results != null)
+            {
+                try
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+
+                    //collect file properties
+                    mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                    //collect item properties if file linked to item
+
+                    AWS.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
+                    if (items.Length > 0)
+                    {
+                        //todo: handle 1:n file item links
+                        AWS.Item item = items[0];
+                        mGetItemProps(item, ref VaultItemProperties);
+                    }
+                    return mFilesDownloaded[0];
+
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Copy Vault file on file server and download using full file path, e.g. "$/Designs/Base.ipt".
         /// Create new file name using default or named numbering scheme.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
@@ -354,6 +477,206 @@ namespace QuickstartiLogicLibrary
 
         /// <summary>
         /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+        /// Downloads first file matching all or any search criterias. 
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
+        /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// </summary>
+        /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
+        /// <param name="VaultFileProperties">Dictonary of properties/values to fill</param>
+        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+        /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default</param>
+        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+        /// <returns>Local path/filename</returns>
+        public string GetFileBySearchCriteria(Dictionary<string, string> SearchCriteria, ref Dictionary<string, string> VaultFileProperties, bool MatchAllCriteria = true, bool CheckOut = false, string[] FoldersSearched = null)
+        {
+            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
+            AWS.Folder[] mFldr;
+            List<long> mFolders = new List<long>();
+            if (FoldersSearched != null)
+            {
+                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
+                foreach (AWS.Folder folder in mFldr)
+                {
+                    if (folder.Id != -1) mFolders.Add(folder.Id);
+                }
+            }
+
+            List<String> mFilesFound = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            //combine all search criteria
+            List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<AWS.File> totalResults = new List<AWS.File>();
+            string bookmark = string.Empty;
+            AWS.SrchStatus status = null;
+
+            while (status == null || totalResults.Count < status.TotalHits)
+            {
+                AWS.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                    mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
+                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
+                else break;
+            }
+            //if results not empty
+            if (totalResults.Count >= 1)
+            {
+                AWS.File wsFile = totalResults.First<AWS.File>();
+                VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFile));
+
+                //build download options including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                if (CheckOut)
+                {
+                    //define checkout options and checkout
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //refine and validate output
+                if (results != null)
+                {
+                    try
+                    {
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+
+                        //get file properties
+                        mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                        return mFilesDownloaded[0];
+
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+        /// Downloads first file matching all or any search criterias. 
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
+        /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// </summary>
+        /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
+        /// <param name="VaultFileProperties">Dictonary of properties/values to fill</param>
+        /// <param name="VaultItemProperties">Dictonary of properties/values to fill if linked to item</param>
+        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+        /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default</param>
+        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+        /// <returns>Local path/filename</returns>
+        public string GetFileBySearchCriteria(Dictionary<string, string> SearchCriteria, ref Dictionary<string, string> VaultFileProperties, 
+            ref Dictionary<string, string> VaultItemProperties, bool MatchAllCriteria = true, bool CheckOut = false, string[] FoldersSearched = null)
+        {
+            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
+            AWS.Folder[] mFldr;
+            List<long> mFolders = new List<long>();
+            if (FoldersSearched != null)
+            {
+                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
+                foreach (AWS.Folder folder in mFldr)
+                {
+                    if (folder.Id != -1) mFolders.Add(folder.Id);
+                }
+            }
+
+            List<String> mFilesFound = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            //combine all search criteria
+            List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<AWS.File> totalResults = new List<AWS.File>();
+            string bookmark = string.Empty;
+            AWS.SrchStatus status = null;
+
+            while (status == null || totalResults.Count < status.TotalHits)
+            {
+                AWS.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                    mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
+                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
+                else break;
+            }
+            //if results not empty
+            if (totalResults.Count >= 1)
+            {
+                AWS.File wsFile = totalResults.First<AWS.File>();
+                VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFile));
+
+                //build download options including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                if (CheckOut)
+                {
+                    //define checkout options and checkout
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //refine and validate output
+                if (results != null)
+                {
+                    try
+                    {
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+
+                        //get file properties
+                        mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                        //get item properties
+                        AWS.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
+                        if (items.Length > 0)
+                        {
+                            //todo: handle 1:n file item links
+                            AWS.Item item = items[0];
+                            mGetItemProps(item, ref VaultItemProperties);
+                        }
+
+                        return mFilesDownloaded[0];
+
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
         /// Downloads all files found, matching the criteria. Returns array of full file names of downloaded files
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
         /// </summary>
@@ -559,6 +882,7 @@ namespace QuickstartiLogicLibrary
             }
         }
 
+
         /// <summary>
         /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
         /// Downloads first file matching all or any search criterias.
@@ -671,13 +995,12 @@ namespace QuickstartiLogicLibrary
         /// <summary>
         /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
         /// Returns array of file names found, matching the criteria.
-        /// 
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
         /// </summary>
-        /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
-        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
-        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
-        /// <returns>Array of file names found</returns>
+        /// <param name="SearchCriteria"></param>
+        /// <param name="MatchAllCriteria"></param>
+        /// <param name="FoldersSearched"></param>
+        /// <returns></returns>
         public IList<string> CheckFilesExistBySearchCriteria(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = true, string[] FoldersSearched = null)
         {
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
@@ -722,6 +1045,66 @@ namespace QuickstartiLogicLibrary
         }
 
 
+        /// <summary>
+        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+        /// Returns array of file names found, matching the criteria.
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+        /// </summary>
+        /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
+        /// <param name="AllFilesVaultFileProperties">Dictonary of files' property dictionaries</param>
+        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+        /// <returns>Array of file names found</returns>
+        public IList<string> CheckFilesExistBySearchCriteria(Dictionary<string, string> SearchCriteria, ref Dictionary<string, Dictionary<string, string>> AllFilesVaultFileProperties,
+            bool MatchAllCriteria = true, string[] FoldersSearched = null)
+        {
+            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
+            AWS.Folder[] mFldr;
+            List<long> mFolders = new List<long>();
+            if (FoldersSearched != null)
+            {
+                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
+                foreach (AWS.Folder folder in mFldr)
+                {
+                    if (folder.Id != -1) mFolders.Add(folder.Id);
+                }
+            }
+
+            List<String> mFilesFound = new List<string>();
+            //combine all search criteria
+            List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<AWS.File> totalResults = new List<AWS.File>();
+            string bookmark = string.Empty;
+            AWS.SrchStatus status = null;
+
+            while (status == null || totalResults.Count < status.TotalHits)
+            {
+                AWS.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
+                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
+                else break;
+            }
+            //if results not empty
+            if (totalResults.Count >= 1)
+            {
+                foreach (AWS.File wsFile in totalResults)
+                {
+                    mFilesFound.Add(wsFile.Name);
+                    Dictionary<string, string> mVaultFileProperties = new Dictionary<string, string>();
+                    VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
+                    mGetFileProps(mFileIt, ref mVaultFileProperties);
+                    AllFilesVaultFileProperties.Add(mFileIt.EntityName, (mVaultFileProperties));
+                }
+                return mFilesFound;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        
         /// <summary>
         /// Create single file number by scheme name and optional input parameters
         /// </summary>
@@ -776,100 +1159,6 @@ namespace QuickstartiLogicLibrary
             }
         }
 
-
-        private List<AWS.SrchCond> CreateSrchConds(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria)
-        {
-            AWS.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
-            //iterate mSearchcriteria to get property definitions and build AWS search criteria
-            List<AWS.SrchCond> mSrchConds = new List<AWS.SrchCond>();
-            int i = 0;
-            foreach (var item in SearchCriteria)
-            {
-                AWS.PropDef mFilePropDef = mFilePropDefs.Single(n => n.DispName == item.Key);
-                AWS.SrchCond mSearchCond = new AWS.SrchCond();
-                {
-                    mSearchCond.PropDefId = mFilePropDef.Id;
-                    mSearchCond.PropTyp = AWS.PropertySearchType.SingleProperty;
-                    mSearchCond.SrchOper = 3; //equals
-                    if (MatchAllCriteria) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
-                    else mSearchCond.SrchRule = AWS.SearchRuleType.May;
-                    mSearchCond.SrchTxt = item.Value;
-                }
-                mSrchConds.Add(mSearchCond);
-                i++;
-            }
-            return mSrchConds;
-        }
-
-
-        private VDF.Vault.Settings.AcquireFilesSettings CreateAcquireSettings(bool CheckOut)
-        {
-            VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
-            if (CheckOut)
-            {
-                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
-            }
-            else
-            {
-                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeAttachments = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeLibraryContents = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.ReleaseBiased = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Revision;
-                settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
-                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
-                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
-                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
-            }
-
-            return settings;
-        }
-
-
-        VDF.Vault.Currency.Entities.FileIteration CreateFileCopy(AWS.File mSourceFile, string mNewFileName)
-        {
-            string mExt = String.Format("{0}{1}", ".", (mSourceFile.Name.Split('.')).Last());
-
-            List<long> mIds = new List<long>();
-            mIds.Add(mSourceFile.Id);
-
-            AWS.ByteArray mTicket = conn.WebServiceManager.DocumentService.GetDownloadTicketsByFileIds(mIds.ToArray()).First();
-            long mTargetFldId = mSourceFile.FolderId;
-
-            AWS.PropWriteResults mResults = new AWS.PropWriteResults();
-            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
-            AWS.ByteArray mByteArray = new AWS.ByteArray();
-            mByteArray.Bytes = mUploadTicket;
-
-            AWS.File mNewFile = conn.WebServiceManager.DocumentService.AddUploadedFile(mTargetFldId, mNewFileName, "iLogic File Copy from " + mSourceFile.Name, mSourceFile.ModDate, null, null, mSourceFile.FileClass, false, mByteArray);
-            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, mNewFile);
-
-            return mFileIt;
-        }
-
-
-        /// <summary>
-        /// Prepared for future use.
-        /// </summary>
-        /// <param name="mFile"></param>
-        /// <param name="mPropDictonary"></param>
-        /// <returns></returns>
-        private bool UpdateFileProperties(AWS.File mFile, Dictionary<AWS.PropDef, object> mPropDictonary)
-        {
-            try
-            {
-                ACET.IExplorerUtil mExplUtil = Autodesk.Connectivity.Explorer.ExtensibilityTools.ExplorerLoader.LoadExplorerUtil(
-                                            conn.Server, conn.Vault, conn.UserID, conn.Ticket);
-                mExplUtil.UpdateFileProperties(mFile, mPropDictonary);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         /// <summary>
         /// Download Thumbnail Image of the given file as Image file.
@@ -1077,6 +1366,96 @@ namespace QuickstartiLogicLibrary
             return null;
         }
 
+        private List<AWS.SrchCond> CreateSrchConds(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria)
+        {
+            AWS.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+            //iterate mSearchcriteria to get property definitions and build AWS search criteria
+            List<AWS.SrchCond> mSrchConds = new List<AWS.SrchCond>();
+            int i = 0;
+            foreach (var item in SearchCriteria)
+            {
+                AWS.PropDef mFilePropDef = mFilePropDefs.Single(n => n.DispName == item.Key);
+                AWS.SrchCond mSearchCond = new AWS.SrchCond();
+                {
+                    mSearchCond.PropDefId = mFilePropDef.Id;
+                    mSearchCond.PropTyp = AWS.PropertySearchType.SingleProperty;
+                    mSearchCond.SrchOper = 3; //equals
+                    if (MatchAllCriteria) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
+                    else mSearchCond.SrchRule = AWS.SearchRuleType.May;
+                    mSearchCond.SrchTxt = item.Value;
+                }
+                mSrchConds.Add(mSearchCond);
+                i++;
+            }
+            return mSrchConds;
+        }
+
+        private VDF.Vault.Settings.AcquireFilesSettings CreateAcquireSettings(bool CheckOut)
+        {
+            VDF.Vault.Settings.AcquireFilesSettings settings = new VDF.Vault.Settings.AcquireFilesSettings(conn);
+            if (CheckOut)
+            {
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout;
+            }
+            else
+            {
+                settings.DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeChildren = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeAttachments = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeLibraryContents = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.ReleaseBiased = true;
+                settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Revision;
+                settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
+                VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
+                mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
+                mResOpt.SyncWithRemoteSiteSetting = VDF.Vault.Settings.AcquireFilesSettings.SyncWithRemoteSite.Always;
+            }
+
+            return settings;
+        }
+
+        private VDF.Vault.Currency.Entities.FileIteration CreateFileCopy(AWS.File mSourceFile, string mNewFileName)
+        {
+            string mExt = String.Format("{0}{1}", ".", (mSourceFile.Name.Split('.')).Last());
+
+            List<long> mIds = new List<long>();
+            mIds.Add(mSourceFile.Id);
+
+            AWS.ByteArray mTicket = conn.WebServiceManager.DocumentService.GetDownloadTicketsByFileIds(mIds.ToArray()).First();
+            long mTargetFldId = mSourceFile.FolderId;
+
+            AWS.PropWriteResults mResults = new AWS.PropWriteResults();
+            byte[] mUploadTicket = conn.WebServiceManager.FilestoreService.CopyFile(mTicket.Bytes, mExt, true, null, out mResults);
+            AWS.ByteArray mByteArray = new AWS.ByteArray();
+            mByteArray.Bytes = mUploadTicket;
+
+            AWS.File mNewFile = conn.WebServiceManager.DocumentService.AddUploadedFile(mTargetFldId, mNewFileName, "iLogic File Copy from " + mSourceFile.Name, mSourceFile.ModDate, null, null, mSourceFile.FileClass, false, mByteArray);
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, mNewFile);
+
+            return mFileIt;
+        }
+
+        /// <summary>
+        /// Prepared for future use.
+        /// </summary>
+        /// <param name="mFile"></param>
+        /// <param name="mPropDictonary"></param>
+        /// <returns></returns>
+        private bool UpdateFileProperties(AWS.File mFile, Dictionary<AWS.PropDef, object> mPropDictonary)
+        {
+            try
+            {
+                ACET.IExplorerUtil mExplUtil = Autodesk.Connectivity.Explorer.ExtensibilityTools.ExplorerLoader.LoadExplorerUtil(
+                                            conn.Server, conn.Vault, conn.UserID, conn.Ticket);
+                mExplUtil.UpdateFileProperties(mFile, mPropDictonary);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         private Image GetThumbnailImage(VDF.Vault.Currency.Entities.FileIteration fileIteration, int Width, int Height)
         {
@@ -1150,7 +1529,6 @@ namespace QuickstartiLogicLibrary
             return retVal;
         }
 
-
         /// <summary>
         /// Vault Blog Sample function to convert legacy meta file format and image file format (added to Vault 2013 and later)
         /// </summary>
@@ -1215,5 +1593,61 @@ namespace QuickstartiLogicLibrary
         {
             return false;
         }
+
+        private void mGetFileProps(VDF.Vault.Currency.Entities.FileIteration mFileIt, ref Dictionary<string, string> VaultFileProperties)
+        {
+            AWS.PropDef[] mPropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+            AWS.PropInst[] mSourcePropInsts = conn.WebServiceManager.PropertyService.GetPropertiesByEntityIds("FILE", new long[] { mFileIt.EntityIterationId });
+            string mPropDispName;
+            string mPropVal;
+            string mThumbnailDispName = mPropDefs.Where(n => n.SysName == "Thumbnail").FirstOrDefault().DispName;
+            foreach (AWS.PropInst mFilePropInst in mSourcePropInsts)
+            {
+                mPropDispName = mPropDefs.Where(n => n.Id == mFilePropInst.PropDefId).FirstOrDefault().DispName;
+                //filter thumbnail property, as iLogic RuleArguments will fail reading it.
+                if (mPropDispName != mThumbnailDispName)
+                {
+                    if (mFilePropInst.Val == null)
+                    {
+                        mPropVal = "";
+                    }
+                    else
+                    {
+                        mPropVal = mFilePropInst.Val.ToString();
+                    }
+                    VaultFileProperties.Add(mPropDispName, mPropVal);
+                }
+            }
+        }
+
+        private void mGetItemProps(AWS.Item item, ref Dictionary<string, string> VaultItemProperties)
+        {
+            string mPropDispName = null;
+            string mPropVal = null;
+            string mThumbnailDispName = null;
+
+            AWS.PropDef[] mItemPropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("ITEM");
+            AWS.PropInst[] mItemPropInsts = conn.WebServiceManager.PropertyService.GetPropertiesByEntityIds("ITEM", new long[] { item.Id });
+            mThumbnailDispName = mItemPropDefs.Where(n => n.SysName == "Thumbnail").FirstOrDefault().DispName;
+            foreach (AWS.PropInst mItemPropInst in mItemPropInsts)
+            {
+                mPropDispName = mItemPropDefs.Where(n => n.Id == mItemPropInst.PropDefId).FirstOrDefault().DispName;
+                if (mPropDispName != mThumbnailDispName)
+                {
+                    if (mItemPropInst.Val == null)
+                    {
+                        mPropVal = "";
+                    }
+                    else
+                    {
+                        mPropVal = mItemPropInst.Val.ToString();
+                    }
+                    VaultItemProperties.Add(mPropDispName, mPropVal);
+                }
+            }
+        }
+
     }
+
 }
+
