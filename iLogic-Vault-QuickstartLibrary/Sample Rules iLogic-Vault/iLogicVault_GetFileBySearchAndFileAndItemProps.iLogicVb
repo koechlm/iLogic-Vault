@@ -1,0 +1,37 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+	
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+	break
+	'Build one to many name/value pairs of Property/Value as search criteria
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Name", "001328.ipt")	'applies to file 001002.ipt
+	'mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	'...add as many as required to enable a unique search result
+
+	'create empty dictionaries for property/value pairs
+	Dim mVaultFileProps As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
+	Dim mVaultItemProps As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
+	
+	'returns full file name in local working folder (download enforces override, if local file exists)
+	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, ByRef mVaultFileProps, ByRef mVaultItemProps, True, False)
+
+	If mVaultFile Is Nothing Then
+		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
+	Else
+		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
+		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+	End If
+	
+End Sub

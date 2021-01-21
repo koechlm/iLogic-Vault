@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Autodesk GmbH")]
 [assembly: AssemblyProduct("QuickstartiLogicLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2020 Autodesk, Markus Koechl")]
+[assembly: AssemblyCopyright("Copyright ©  2021 Autodesk, Markus Koechl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
