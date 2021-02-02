@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 
-using AWS = Autodesk.Connectivity.WebServices;
+using ACW = Autodesk.Connectivity.WebServices;
 using AWT = Autodesk.Connectivity.WebServicesTools;
 using VDF = Autodesk.DataManagement.Client.Framework;
 
@@ -41,7 +41,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
         /// <returns>Returns true, if connection is valid</returns>
         public bool ReuseConnection(string DbSrvName, string FlSrvName, string VaultName, long UserId, string Ticket)
         {
-            AWS.ServerIdentities mSrvIdnts = new AWS.ServerIdentities();
+            ACW.ServerIdentities mSrvIdnts = new ACW.ServerIdentities();
             mSrvIdnts.DataServer = DbSrvName;
             mSrvIdnts.FileServer = FlSrvName;
             AWT.UserIdTicketCredentials mCred = new AWT.UserIdTicketCredentials(mSrvIdnts, VaultName, UserId, Ticket);
@@ -53,6 +53,153 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 conn = mConnection;
                 return true;
             }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Adds local file to Vault.
+        /// </summary>
+        /// <param name="FullFileName">File path and name of file to add in local working folder.</param>
+        /// <param name="VaultFolderPath">Full path in Vault, e.g. "$/Designs/P-00000</param>
+        /// <param name="UpdateExisting">Creates new file version if existing file is available for check-out.</param>
+        /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for IAM, IPN, IDW/DWG</returns>
+        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true)
+        {
+            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
+            System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
+
+            ACW.Folder mFolder = mWsMgr.DocumentService.FindFoldersByPaths(new string[] { VaultFolderPath }).FirstOrDefault();
+            if (mFolder == null || mFolder.Id == -1)
+            {
+                return false;
+            }
+            string vaultFilePath = System.IO.Path.Combine(mFolder.FullName, mLocalFileInfo.Name).Replace("\\", "/");
+
+            ACW.File wsFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { vaultFilePath }).First();
+
+            //exclude CAD files with references
+            if (IsCadFile(wsFile, mWsMgr))
+            {
+                return false;
+            }
+
+            VDF.Currency.FilePathAbsolute vdfPath = new VDF.Currency.FilePathAbsolute(mLocalFileInfo.FullName);
+            VDF.Vault.Currency.Entities.FileIteration vdfFile = null;
+            VDF.Vault.Currency.Entities.FileIteration addedFile = null;
+            VDF.Vault.Currency.Entities.FileIteration mUploadedFile = null;
+            if (wsFile == null || wsFile.Id < 0)
+            {
+                // add new file to Vault
+                var folderEntity = new Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities.Folder(conn, mFolder);
+                try
+                {
+                    addedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic rule", null, null, ACW.FileClassification.None, false, vdfPath);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("iLogic rule could not add file " + vdfPath + "Exception: ", ex);
+                }
+
+            }
+            else
+            {
+                if (UpdateExisting == true)
+                {
+                    // checkin new file version
+                    VDF.Vault.Settings.AcquireFilesSettings aqSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
+                    {
+                        DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
+                    };
+                    vdfFile = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
+                    aqSettings.AddEntityToAcquire(vdfFile);
+                    var results = conn.FileManager.AcquireFiles(aqSettings);
+                    try
+                    {
+                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("iLogic rule could not update existing file " + vdfFile + "Exception: ", ex);
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        private bool IsCadFile(ACW.File wsFile, Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr)
+        {
+            //don't add Inventor files except single part files
+            List<string> mFileExtensions = new List<string> { ".iam", ".idw", ".dwg" };
+            if (mFileExtensions.Any(n => wsFile.Name.EndsWith(n)))
+            {
+                return true;
+            }
+            //differentiate Inventor DWG and AutoCAD DWG
+            if (wsFile.Name.EndsWith(".dwg"))
+            {
+                ACW.PropDef[] mPropDefs = mWsMgr.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                ACW.PropDef mPropDef = null;
+                ACW.PropInst mPropInst = null;
+                mPropDef = mPropDefs.Where(n => n.SysName == "Provider").FirstOrDefault();
+                mPropInst = (mWsMgr.PropertyService.GetPropertiesByEntityIds("FILE", new long[] { wsFile.Id })).Where(n => n.PropDefId == mPropDef.Id).FirstOrDefault();
+                if (mPropInst.Val.ToString() == "Inventor DWG")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="LocalPath">File or Folder path in local working folder</param>
+        /// <returns>Vault Folder Path; if LocalPath is a Filepath, the file's parent Folderpath returns</returns>
+        public string ConvertLocalPathToVaultPath(string LocalPath)
+        {
+            string mVaultPath = null;
+            string mWf = conn.WorkingFoldersManager.GetWorkingFolder("$/").FullPath;
+            if (LocalPath.Contains(mWf))
+            {
+                if (IsFilePath(LocalPath) == true)
+                {
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalPath);
+                    LocalPath = fileInfo.DirectoryName;
+                }
+                if (IsDirPath(LocalPath) == true)
+                {
+                    mVaultPath = LocalPath.Replace(mWf, "$/");
+                    mVaultPath = mVaultPath.Replace("\\", "/");
+                    return mVaultPath;
+                }
+                else
+                {
+                    return "Invalid local path";
+                }
+            }
+            else
+            {
+                return "Error: Local path outside of working folder";
+            }
+        }
+
+
+        private bool IsFilePath(string path)
+        {
+            if (System.IO.File.Exists(path)) return true;
+            return false;
+        }
+
+        private bool IsDirPath(string path)
+        {
+            if (System.IO.Directory.Exists(path)) return true;
             return false;
         }
 
@@ -69,7 +216,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
             List<string> mFiles = new List<string>();
             List<string> mFilesDownloaded = new List<string>();
             mFiles.Add(VaultFullFileName);
-            AWS.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
             //define download options, including DefaultAcquisitionOptions
@@ -122,12 +269,12 @@ namespace QuickstartiLogicVltInvSrvLibrary
         public string GetFileBySearchCriteria(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = true, bool CheckOut = false, string[] FoldersSearched = null)
         {
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
-            AWS.Folder[] mFldr;
+            ACW.Folder[] mFldr;
             List<long> mFolders = new List<long>();
             if (FoldersSearched != null)
             {
                 mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
-                foreach (AWS.Folder folder in mFldr)
+                foreach (ACW.Folder folder in mFldr)
                 {
                     if (folder.Id != -1) mFolders.Add(folder.Id);
                 }
@@ -136,14 +283,14 @@ namespace QuickstartiLogicVltInvSrvLibrary
             List<String> mFilesFound = new List<string>();
             List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
-            List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
-            List<AWS.File> totalResults = new List<AWS.File>();
+            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<ACW.File> totalResults = new List<ACW.File>();
             string bookmark = string.Empty;
-            AWS.SrchStatus status = null;
+            ACW.SrchStatus status = null;
 
             while (status == null || totalResults.Count < status.TotalHits)
             {
-                AWS.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
                 if (mSrchResults != null) totalResults.AddRange(mSrchResults);
                 else break;
@@ -151,7 +298,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
             //if results not empty
             if (totalResults.Count >= 1)
             {
-                AWS.File wsFile = totalResults.First<AWS.File>();
+                ACW.File wsFile = totalResults.First<ACW.File>();
                 VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFile));
 
                 //build download options including DefaultAcquisitionOptions
@@ -211,12 +358,12 @@ namespace QuickstartiLogicVltInvSrvLibrary
         public IList<string> GetFilesBySearchCriteria(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = true, bool CheckOut = false, string[] FoldersSearched = null)
         {
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
-            AWS.Folder[] mFldr;
+            ACW.Folder[] mFldr;
             List<long> mFolders = new List<long>();
             if (FoldersSearched != null)
             {
                 mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
-                foreach (AWS.Folder folder in mFldr)
+                foreach (ACW.Folder folder in mFldr)
                 {
                     if (folder.Id != -1) mFolders.Add(folder.Id);
                 }
@@ -225,14 +372,14 @@ namespace QuickstartiLogicVltInvSrvLibrary
             List<VDF.Vault.Currency.Entities.FileIteration> mFilesFound = new List<VDF.Vault.Currency.Entities.FileIteration>();
             List<String> mFilesDownloaded = new List<string>();
             //combine all search criteria
-            List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
-            List<AWS.File> totalResults = new List<AWS.File>();
+            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<ACW.File> totalResults = new List<ACW.File>();
             string bookmark = string.Empty;
-            AWS.SrchStatus status = null;
+            ACW.SrchStatus status = null;
 
             while (status == null || totalResults.Count < status.TotalHits)
             {
-                AWS.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
                 if (mSrchResults != null) totalResults.AddRange(mSrchResults);
                 else break;
@@ -242,7 +389,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
             {
                 //build download options including DefaultAcquisitionOptions
                 VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-                foreach (AWS.File wsFile in totalResults)
+                foreach (ACW.File wsFile in totalResults)
                 {
                     VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
                     //register file paths to validate downloaded ones later
@@ -257,7 +404,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 {
                     //define checkout options and checkout
                     settings = CreateAcquireSettings(true);
-                    foreach (AWS.File wsFile in totalResults)
+                    foreach (ACW.File wsFile in totalResults)
                     {
                         VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
                         settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
@@ -302,7 +449,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
 
             try
             {
-                AWS.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+                ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
                 VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
                 Image image = GetThumbnailImage(mFileIt, Width, Height);
@@ -339,12 +486,12 @@ namespace QuickstartiLogicVltInvSrvLibrary
         public string GetThumbnailFileBySearchCriteria(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = true, string[] FoldersSearched = null, int Width = 300, int Height = 300)
         {
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
-            AWS.Folder[] mFldr;
+            ACW.Folder[] mFldr;
             List<long> mFolders = new List<long>();
             if (FoldersSearched != null)
             {
                 mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
-                foreach (AWS.Folder folder in mFldr)
+                foreach (ACW.Folder folder in mFldr)
                 {
                     if (folder.Id != -1) mFolders.Add(folder.Id);
                 }
@@ -352,14 +499,14 @@ namespace QuickstartiLogicVltInvSrvLibrary
 
             List<String> mFilesFound = new List<string>();
             //combine all search criteria
-            List<AWS.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
-            List<AWS.File> totalResults = new List<AWS.File>();
+            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<ACW.File> totalResults = new List<ACW.File>();
             string bookmark = string.Empty;
-            AWS.SrchStatus status = null;
+            ACW.SrchStatus status = null;
 
             while (status == null || totalResults.Count < status.TotalHits)
             {
-                AWS.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
                 if (mSrchResults != null) totalResults.AddRange(mSrchResults);
                 else break;
@@ -370,13 +517,13 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 try
                 {
                     string mImageFullFileName = null;
-                    AWS.File wsFile = totalResults.First<AWS.File>();
+                    ACW.File wsFile = totalResults.First<ACW.File>();
                     VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFile));
 
                     Image image = GetThumbnailImage(mFileIt, Height, Width);
                     if (image != null)
                     {
-                        AWS.Folder mParentFldr = conn.WebServiceManager.DocumentService.GetFolderById(wsFile.FolderId);
+                        ACW.Folder mParentFldr = conn.WebServiceManager.DocumentService.GetFolderById(wsFile.FolderId);
                         string VaultFullFileName = mParentFldr.FullName + "/" + wsFile.Name;
                         string mExt = System.IO.Path.GetExtension(VaultFullFileName);
                         string LocalFullFileName = conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).ToString();
@@ -424,22 +571,22 @@ namespace QuickstartiLogicVltInvSrvLibrary
             return settings;
         }
 
-        private List<AWS.SrchCond> CreateSrchConds(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria)
+        private List<ACW.SrchCond> CreateSrchConds(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria)
         {
-            AWS.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+            ACW.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
             //iterate mSearchcriteria to get property definitions and build AWS search criteria
-            List<AWS.SrchCond> mSrchConds = new List<AWS.SrchCond>();
+            List<ACW.SrchCond> mSrchConds = new List<ACW.SrchCond>();
             int i = 0;
             foreach (var item in SearchCriteria)
             {
-                AWS.PropDef mFilePropDef = mFilePropDefs.Single(n => n.DispName == item.Key);
-                AWS.SrchCond mSearchCond = new AWS.SrchCond();
+                ACW.PropDef mFilePropDef = mFilePropDefs.Single(n => n.DispName == item.Key);
+                ACW.SrchCond mSearchCond = new ACW.SrchCond();
                 {
                     mSearchCond.PropDefId = mFilePropDef.Id;
-                    mSearchCond.PropTyp = AWS.PropertySearchType.SingleProperty;
+                    mSearchCond.PropTyp = ACW.PropertySearchType.SingleProperty;
                     mSearchCond.SrchOper = 3; //equals
-                    if (MatchAllCriteria) mSearchCond.SrchRule = AWS.SearchRuleType.Must;
-                    else mSearchCond.SrchRule = AWS.SearchRuleType.May;
+                    if (MatchAllCriteria) mSearchCond.SrchRule = ACW.SearchRuleType.Must;
+                    else mSearchCond.SrchRule = ACW.SearchRuleType.May;
                     mSearchCond.SrchTxt = item.Value;
                 }
                 mSrchConds.Add(mSearchCond);
