@@ -66,8 +66,14 @@ namespace QuickstartiLogicVltInvSrvLibrary
         /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for IAM, IPN, IDW/DWG</returns>
         public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true)
         {
-            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
+            //exclude CAD files with references
             System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
+            if (IsCadFile(mLocalFileInfo))
+            {
+                return false;
+            }
+
+            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
 
             ACW.Folder mFolder = mWsMgr.DocumentService.FindFoldersByPaths(new string[] { VaultFolderPath }).FirstOrDefault();
             if (mFolder == null || mFolder.Id == -1)
@@ -77,12 +83,6 @@ namespace QuickstartiLogicVltInvSrvLibrary
             string vaultFilePath = System.IO.Path.Combine(mFolder.FullName, mLocalFileInfo.Name).Replace("\\", "/");
 
             ACW.File wsFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { vaultFilePath }).First();
-
-            //exclude CAD files with references
-            if (IsCadFile(wsFile, mWsMgr))
-            {
-                return false;
-            }
 
             VDF.Currency.FilePathAbsolute vdfPath = new VDF.Currency.FilePathAbsolute(mLocalFileInfo.FullName);
             VDF.Vault.Currency.Entities.FileIteration vdfFile = null;
@@ -132,30 +132,16 @@ namespace QuickstartiLogicVltInvSrvLibrary
             }
         }
 
-        private bool IsCadFile(ACW.File wsFile, Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr)
+        private bool IsCadFile(System.IO.FileInfo FileInfo)
         {
             //don't add Inventor files except single part files
-            List<string> mFileExtensions = new List<string> { ".iam", ".idw", ".dwg" };
-            if (mFileExtensions.Any(n => wsFile.Name.EndsWith(n)))
+            List<string> mFileExtensions = new List<string> { "ipt", ".iam", "ipn", ".idw", ".dwg" };
+            if (mFileExtensions.Any(n => FileInfo.Extension == n))
             {
                 return true;
             }
-            //differentiate Inventor DWG and AutoCAD DWG
-            if (wsFile.Name.EndsWith(".dwg"))
-            {
-                ACW.PropDef[] mPropDefs = mWsMgr.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
-                ACW.PropDef mPropDef = null;
-                ACW.PropInst mPropInst = null;
-                mPropDef = mPropDefs.Where(n => n.SysName == "Provider").FirstOrDefault();
-                mPropInst = (mWsMgr.PropertyService.GetPropertiesByEntityIds("FILE", new long[] { wsFile.Id })).Where(n => n.PropDefId == mPropDef.Id).FirstOrDefault();
-                if (mPropInst.Val.ToString() == "Inventor DWG")
-                {
-                    return true;
-                }
-            }
             return false;
         }
-
 
         /// <summary>
         /// 
@@ -189,7 +175,6 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 return "Error: Local path outside of working folder";
             }
         }
-
 
         private bool IsFilePath(string path)
         {

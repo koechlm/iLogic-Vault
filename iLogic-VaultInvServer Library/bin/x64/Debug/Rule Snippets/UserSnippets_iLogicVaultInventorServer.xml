@@ -17,8 +17,10 @@ AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
       <Name>Re-Use Job Processor Connection</Name>
       <ToolTip>get the job processor's Vault connection (note - this is different from Inventor Application)</ToolTip>
       <Index>6002</Index>
-      <Code><![CDATA[	'get the job processor's Vault connection (note - this is different from Inventor Application)
-	Dim iLogicVault As New QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary
+      <Code>
+        <![CDATA[	'get the job processor's Vault connection (note - this is different from Inventor Application)
+	Dim ex As Exception
+  Dim iLogicVault As New QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary
 	Dim LoggedIn As Boolean
 	Dim FileState As String
 	Try
@@ -28,7 +30,6 @@ AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
 		userId = RuleArguments("UserId")
 		ticket = RuleArguments("Ticket")
 		LoggedIn = iLogicVault.ReuseConnection(dbServer, fServer, vltName, userId, ticket)
-		FileState = RuleArguments("State (Historical)")
 	Catch
 		Logger.Error("Failed Reading Rule Arguments.")
 		Throw ex
@@ -37,13 +38,6 @@ AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
 	If LoggedIn = False
 		Logger.Error("Rule could not re-use Job Processor's Vault Login.")
 		Throw ex
-	End If
-
-	'don't update drawings in Obsolete State
-	If FileState = "Obsolete" Then
-		Dim mColor As Inventor.Color = ThisServer.TransientObjects.CreateColor(255, 174, 174) 'red for obsolete
-		mDrwDoc.SheetSettings.SheetColor = (mColor)
-		Exit Sub
 	End If]]></Code>
     </CodeSnippet>
     <CodeSnippet>
