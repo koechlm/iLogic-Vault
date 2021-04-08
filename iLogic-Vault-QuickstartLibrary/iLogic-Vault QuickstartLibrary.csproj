@@ -61,23 +61,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.Connectivity.WebServices">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.Connectivity.WebServices.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.WebServices.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.DataManagement.Client.Framework.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework.Vault">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Connectivity.Application.VaultBase">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Connectivity.Application.VaultBase.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Inventor 2022 Bin\Connectivity.Application.VaultBase.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
