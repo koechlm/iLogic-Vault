@@ -1,0 +1,71 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'enable iLogicVault commands and validate user's login state
+break
+Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+If iLogicVault.LoggedIn = False
+	Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+	Exit Sub
+End If
+
+'don't run rules for AnyCAD components.
+	If ThisDoc.Document.FullFileName.Contains("*LocalDocs*") = True Then
+		Exit Sub
+	End If
+
+	Dim oAssyDoc As Inventor.AssemblyDocument
+	Dim oAssyCompDef As Inventor.AssemblyComponentDefinition
+	Dim oBom As Inventor.BOM
+	Dim oBomView As Inventor.BOMView
+	Dim oBomRow As Inventor.BOMRow
+	Dim oBomRowEnum As Inventor.BOMRowsEnumerator
+	
+	Try
+		oDoc = ThisDoc.Document
+		If oDoc.DocumentType = kAssemblyDocumentObject Then
+			oAssyDoc = oDoc
+			oAssyCompDef = oAssyDoc.ComponentDefinition
+		End If
+		oBom = oAssyCompDef.BOM
+		oBom.StructuredViewEnabled = True
+		oBom.StructuredViewFirstLevelOnly = False
+		
+		'secure constant item numbers
+		oBomView = oBom.BOMViews.Item("Structured")
+		For Each oBomRow In oBomView.BOMRows
+			oBomRow.ItemNumberLocked = True	
+		Next	
+		
+	Catch ex As Exception
+		Logger.Error("Something went wrong while enabling BOM Structured View.")
+	End Try
+	
+	'derive export file name from this document
+	Dim oBOMExpFile = ThisDoc.ChangeExtension("xlsx")
+		
+	'enable LOD Master (BOM export is not support using other LOD)
+	Try
+	oAssyCompDef.RepresentationsManager.LevelOfDetailRepresentations.Item("Master").Activate(True)
+	Catch ex As Exception
+		Logger.Error("Something went wrong while activating LOD Master")
+	End Try
+	
+	'Delete existing file to avoid overwrite restrictions
+	Dim oFileInfo As New System.IO.FileInfo(oBOMExpFile)
+	If oFileInfo.Exists = True Then
+		If (oFileInfo.Attributes) Then
+	          oFileInfo.Attributes = (oFileInfo.Attributes And Not oFileInfo.Attributes.ReadOnly)
+	     	System.IO.File.Delete(oBOMExpFile)
+		End If
+	End If
+
+	'create BOM export
+	ThisBOM.Export("Structured", oBOMExpFile, kMicrosoftExcelFormat)
+	'attach result
+	If System.IO.File.Exists(oBOMExpFile) Then 
+		Dim mReturn As Boolean
+		Dim mVaultPath As String = iLogicVault.ConvertLocalPathToVaultPath(oBOMExpFile)
+		mReturn = iLogicVault.AddFile(oBOMExpFile, mVaultPath, True)
+	Else
+		Logger.Error("Something went wrong exporting BOM (ThisBOM.Export()")
+	End If
+

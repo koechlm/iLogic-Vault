@@ -7,6 +7,7 @@ using ACET = Autodesk.Connectivity.Explorer.ExtensibilityTools;
 using ACW = Autodesk.Connectivity.WebServices;
 using VDF = Autodesk.DataManagement.Client.Framework;
 using VltBase = Connectivity.Application.VaultBase;
+using Autodesk.DataManagement.Client.Framework.Vault.Currency.Properties;
 
 namespace QuickstartiLogicLibrary
 {
@@ -58,6 +59,7 @@ namespace QuickstartiLogicLibrary
             return null;
         }
 
+        /// <summary>
         /// Adds local file to Vault.
         /// </summary>
         /// <param name="FullFileName">File path and name of file to add in local working folder.</param>
@@ -299,7 +301,10 @@ namespace QuickstartiLogicLibrary
 
 
         /// <summary>
-        /// 
+        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder(download enforces override, if local file exists),
+        /// returns nothing if the file does not exist at indicated location.
+        /// File and Item property dictionaries return all values converted to text. Access the value using the Vault property display name as key.
+        /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
         /// <param name="VaultFullFileName"></param>
         /// <param name="VaultFileProperties"></param>
@@ -361,6 +366,59 @@ namespace QuickstartiLogicLibrary
                 }
             }
             return null;
+        }
+
+
+        /// <summary>
+        /// Get the local file's status in Vault. Validate the ErrorState = "None" to get all return values.
+        /// </summary>
+        /// <param name="LocalFullFileName">Local path and file name, e.g., ThisDoc.FullFileName</param>
+        /// <returns>ErrorState only if file does not exist, otherwise CheckOutState, ConsumableState, ErrorState, LocalEditsState, LockState, RevisionState, VersionState</returns>
+        public Dictionary<string, string> GetVaultFileStatus(string LocalFullFileName)
+        {
+            Dictionary<string, string> keyValues = new Dictionary<string, string>();
+
+            //convert the local path to the corresponding Vault path
+            string FileName = null;
+            System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalFullFileName);
+            if (fileInfo.Exists)
+            {
+                FileName = fileInfo.Name;
+            }
+            else
+            {
+                keyValues.Add("ErrorState", "Local file not found");
+                return keyValues;
+            }
+            string VaultFilePath = ConvertLocalPathToVaultPath(LocalFullFileName) + "/" + FileName;
+
+            //get the file object consuming the Vault Path; if the file does not exist return the file-non-exist status information
+            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
+            ACW.File mFile =  mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { VaultFilePath }).FirstOrDefault();
+
+            if (mFile.Id == -1)// file not found
+            {
+                keyValues.Add("ErrorState", "File does not exist in Vault.");
+                return keyValues;
+            }
+
+            VDF.Vault.Currency.Entities.FileIteration mFileIteration = new VDF.Vault.Currency.Entities.FileIteration(conn, mFile);
+
+            PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+            PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+            EntityStatusImageInfo status = conn.PropertyManager.GetPropertyValue(mFileIteration, mVaultStatus, null) as EntityStatusImageInfo;
+
+            keyValues.Add("CheckOutState", status.Status.CheckoutState.ToString());
+            keyValues.Add("ConsumableState", status.Status.ConsumableState.ToString());
+            keyValues.Add("ErrorState", status.Status.ErrorState.ToString());
+            keyValues.Add("LocalEditsState", status.Status.LocalEditsState.ToString());
+            keyValues.Add("LockState", status.Status.LockState.ToString());
+            keyValues.Add("RevisionState", status.Status.RevisionState.ToString());
+            keyValues.Add("VersionState", status.Status.VersionState.ToString());
+
+            return keyValues;
         }
 
         /// <summary>
