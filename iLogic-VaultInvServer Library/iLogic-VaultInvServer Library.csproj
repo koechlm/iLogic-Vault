@@ -44,26 +44,26 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\2021.1\</OutputPath>
+    <OutputPath>bin\x64\Release\2022\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\x64\Release\2021.1\QuickstartiLogicVltInvSrvLibrary.xml</DocumentationFile>
+    <DocumentationFile>bin\x64\Release\2022\QuickstartiLogicVltInvSrvLibrary.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autodesk.Connectivity.WebServices">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.Connectivity.WebServices.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.WebServices.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.DataManagement.Client.Framework.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework.Vault">
-      <HintPath>..\..\..\..\..\Program Files\Autodesk\Vault Client 2021\Explorer\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
+      <HintPath>..\..\..\OneDrive - autodesk\Vault Customization\Autodesk Vault 2022 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

@@ -37,14 +37,14 @@ namespace QuickstartiLogicVltInvSrvLibrary
         /// <param name="FlSrvName"></param>
         /// <param name="VaultName"></param>
         /// <param name="UserId"></param>
-        /// <param name="Ticket"></param>
+        /// <param name="SessionId"></param>
         /// <returns>Returns true, if connection is valid</returns>
-        public bool ReuseConnection(string DbSrvName, string FlSrvName, string VaultName, long UserId, string Ticket)
+        public bool ReuseConnection(string DbSrvName, string FlSrvName, string VaultName, long UserId, string SessionId)
         {
             ACW.ServerIdentities mSrvIdnts = new ACW.ServerIdentities();
             mSrvIdnts.DataServer = DbSrvName;
             mSrvIdnts.FileServer = FlSrvName;
-            AWT.UserIdTicketCredentials mCred = new AWT.UserIdTicketCredentials(mSrvIdnts, VaultName, UserId, Ticket);
+            AWT.SessionCredentials mCred = new AWT.SessionCredentials(mSrvIdnts, VaultName, SessionId);
             Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = new AWT.WebServiceManager(mCred);
             VDF.Vault.Currency.Connections.Connection mConnection = new VDF.Vault.Currency.Connections.Connection(
                 mWsMgr, VaultName, UserId, DbSrvName, VDF.Vault.Currency.Connections.AuthenticationFlags.Standard);
