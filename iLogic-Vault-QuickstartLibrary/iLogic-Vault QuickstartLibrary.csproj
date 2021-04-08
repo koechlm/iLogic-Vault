@@ -114,11 +114,15 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFile.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFile.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExistsAndGetProperties.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExistsAndGetProperties.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckIn.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -128,12 +132,18 @@
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePath.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePathAndFileItemProps.iLogicVb" />
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePathAndFileProps.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePathAndFileItemProps.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePathAndFileProps.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearch.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchAndFileAndItemProps.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchAndFileAndItemProps.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchUsingFolderOption.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -167,7 +177,9 @@
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySourceFullFilePath.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetVaultFileStatus.iLogicVb" />
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetVaultFileStatus.iLogicVb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
