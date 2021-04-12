@@ -25,12 +25,18 @@ Sub Main
 	Dim mVaultItemProps As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, ByRef mVaultFileProps, ByRef mVaultItemProps, True, False)
+	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, mVaultFileProps, mVaultItemProps, True, False)
 
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
 	Else
-		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
+		Logger.Info("File " & mVaultFile & " downloaded.")
+		For Each item In mVaultFileProps
+			Logger.Info("Vault File Property Name/Value: " + item.Key + " = " + item.Value)
+		Next
+		For Each item In mVaultItemProps
+			Logger.Info("Vault linked Item Property Name/Value: " + item.Key + " = " + item.Value)
+		Next
 		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If
 	
