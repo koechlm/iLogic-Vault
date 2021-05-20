@@ -28,8 +28,8 @@ AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
 		fServer = RuleArguments("ServerName")
 		vltName = RuleArguments("VaultName")
 		userId = RuleArguments("UserId")
-		ticket = RuleArguments("Ticket")
-		LoggedIn = iLogicVault.ReuseConnection(dbServer, fServer, vltName, userId, ticket)
+		SessionId = RuleArguments("SessionId")
+		LoggedIn = iLogicVault.ReuseConnection(dbServer, fServer, vltName, userId, SessionId)
 	Catch
 		Logger.Error("Failed Reading Rule Arguments.")
 		Throw ex
