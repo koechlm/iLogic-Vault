@@ -6,6 +6,7 @@ using System.Drawing;
 using ACW = Autodesk.Connectivity.WebServices;
 using AWT = Autodesk.Connectivity.WebServicesTools;
 using VDF = Autodesk.DataManagement.Client.Framework;
+using Autodesk.DataManagement.Client.Framework.Vault.Currency.Properties;
 
 
 namespace QuickstartiLogicVltInvSrvLibrary
@@ -130,6 +131,222 @@ namespace QuickstartiLogicVltInvSrvLibrary
                     return false;
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Adds local file to Vault and optionally attaches it to a parent file.
+        /// </summary>
+        /// <param name="FullFileName">File path and name of file to add in local working folder.</param>
+        /// <param name="VaultFolderPath">Full path in Vault, e.g. "$/Designs/P-00000</param>
+        /// <param name="UpdateExisting">Creates new file version if existing file is available for check-out.</param>
+        /// <param name="ParentFileToAttachTo">Creates an attachment to the parent file consuming the newly added file; 
+        /// provide Vault path and file name ('$/...') of parent file to attach to</param>
+        /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for IAM, IPN, IDW/DWG.
+        /// Returns false if the file added, but could not attach to the parent.</returns>
+        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, string ParentFileToAttachTo = null)
+        {
+            //exclude CAD files with references
+            System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
+            if (IsCadFile(mLocalFileInfo))
+            {
+                return false;
+            }
+
+            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
+
+            ACW.Folder mFolder = mWsMgr.DocumentService.FindFoldersByPaths(new string[] { VaultFolderPath }).FirstOrDefault();
+            if (mFolder.Id == -1)
+            {
+                return false;
+            }
+            string vaultFilePath = System.IO.Path.Combine(mFolder.FullName, mLocalFileInfo.Name).Replace("\\", "/");
+
+            ACW.File wsFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { vaultFilePath }).First();
+
+            VDF.Currency.FilePathAbsolute vdfPath = new VDF.Currency.FilePathAbsolute(mLocalFileInfo.FullName);
+            VDF.Vault.Currency.Entities.FileIteration vdfFile = null;
+            //VDF.Vault.Currency.Entities.FileIteration addedFile = null;
+            VDF.Vault.Currency.Entities.FileIteration mUploadedFile = null;
+            if (wsFile.Id == -1)
+            {
+                // add new file to Vault
+                var folderEntity = new Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities.Folder(conn, mFolder);
+                try
+                {
+                    mUploadedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic rule", null, null, ACW.FileClassification.None, false, vdfPath);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                if (UpdateExisting == true)
+                {
+                    // checkin new file version
+                    VDF.Vault.Settings.AcquireFilesSettings aqSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
+                    {
+                        DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
+                    };
+                    vdfFile = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
+                    aqSettings.AddEntityToAcquire(vdfFile);
+                    var results = conn.FileManager.AcquireFiles(aqSettings);
+                    try
+                    {
+                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if (ParentFileToAttachTo == null)
+            {
+                return true;
+            }
+            else
+            {
+                //check that the file can be found using the path and that it is available for checkout
+                ACW.File mParentFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { ParentFileToAttachTo }).First();
+                if (mParentFile.Id == -1)
+                {
+                    return false;
+                }
+                else
+                {
+                    VDF.Vault.Currency.Entities.FileIteration mParFileIteration = new VDF.Vault.Currency.Entities.FileIteration(conn, mParentFile);
+                    //try to check-out the file;
+                    try
+                    {
+                        VDF.Vault.Settings.AcquireFilesSettings acquireFilesSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
+                        {
+                            DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
+                        };
+                        acquireFilesSettings.CheckoutComment = "iLogic-Rule is about attaching an uploaded file.";
+                        acquireFilesSettings.AddEntityToAcquire(mParFileIteration);
+                        //Check-out and evaluate the results
+                        VDF.Vault.Results.AcquireFilesResults acquireFilesResults = conn.FileManager.AcquireFiles(acquireFilesSettings);
+                        if (acquireFilesResults.IsCancelled != true && acquireFilesResults.FileResults.First().Status == VDF.Vault.Results.FileAcquisitionResult.AcquisitionStatus.Success)
+                        {
+                            VDF.Vault.Currency.Entities.FileIteration mNewFileIteration = acquireFilesResults.FileResults.First().NewFileIteration;
+
+                            //capture existing file associations
+                            VDF.Vault.Settings.FileRelationshipGatheringSettings fileRelationshipGatheringSettings = new VDF.Vault.Settings.FileRelationshipGatheringSettings();
+                            fileRelationshipGatheringSettings.IncludeAttachments = true;
+                            fileRelationshipGatheringSettings.IncludeChildren = true;
+                            fileRelationshipGatheringSettings.IncludeRelatedDocumentation = true;
+                            fileRelationshipGatheringSettings.IncludeParents = false;
+                            fileRelationshipGatheringSettings.IncludeHiddenEntities = true;
+                            fileRelationshipGatheringSettings.IncludeLibraryContents = true;
+
+                            IEnumerable<ACW.FileAssocLite> fileAssocsLite = conn.FileManager.GetFileAssociationLites(new long[] { mNewFileIteration.EntityIterationId },
+                                fileRelationshipGatheringSettings);
+
+                            //collect association parameters of existing file associations
+                            List<ACW.FileAssocParam> fileAssocParams = new List<ACW.FileAssocParam>();
+                            foreach (ACW.FileAssocLite item in fileAssocsLite)
+                            {
+                                //filter the parent associations 
+                                if (item.ParFileId == mNewFileIteration.EntityIterationId)
+                                {
+                                    ACW.FileAssocParam param = new ACW.FileAssocParam();
+                                    param.Typ = item.Typ;
+                                    param.RefId = item.RefId;
+                                    param.Source = item.Source;
+                                    param.CldFileId = item.CldFileId;
+                                    param.ExpectedVaultPath = item.ExpectedVaultPath;
+                                    fileAssocParams.Add(param);
+                                }
+                            }
+
+                            //create new association parameter of file to attach
+                            ACW.FileAssocParam mNewParam = new ACW.FileAssocParam();
+                            mNewParam.Typ = ACW.AssociationType.Attachment;
+                            mNewParam.RefId = null;
+                            mNewParam.Source = null;
+                            mNewParam.CldFileId = mUploadedFile.EntityIterationId;
+                            mNewParam.ExpectedVaultPath = mFolder.FullName;
+
+                            //combine the new parameter and the existing ones
+                            fileAssocParams.Add(mNewParam);
+                            ACW.FileAssocParam[] mFileAssocParamArray = (ACW.FileAssocParam[])fileAssocParams.ToArray();
+
+                            //check-in the file providing the updated associations;
+                            System.IO.Stream stream = null;
+                            VDF.Vault.Currency.Entities.FileIteration mUpdatedParent = conn.FileManager.CheckinFile(mNewFileIteration, "iLogic-Rule attached " + mUploadedFile.EntityName, false, DateTime.Now, mFileAssocParamArray,
+                               null, true, mNewFileIteration.EntityName, mNewFileIteration.FileClassification, false, stream);
+                            if (mUpdatedParent.EntityIterationId == -1)
+                            {
+                                mUpdatedParent = conn.FileManager.UndoCheckoutFile(mNewFileIteration, stream);
+                                return false;
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+
+        /// <summary>
+        /// Get the local file's status in Vault. Validate the ErrorState = "None" to get all return values.
+        /// </summary>
+        /// <param name="LocalFullFileName">Local path and file name, e.g., ThisDoc.FullFileName</param>
+        /// <returns>ErrorState only if file does not exist, otherwise CheckOutState, ConsumableState, ErrorState, LocalEditsState, LockState, RevisionState, VersionState</returns>
+        public Dictionary<string, string> GetVaultFileStatus(string LocalFullFileName)
+        {
+            Dictionary<string, string> keyValues = new Dictionary<string, string>();
+
+            //convert the local path to the corresponding Vault path
+            string FileName = null;
+            System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalFullFileName);
+            if (fileInfo.Exists)
+            {
+                FileName = fileInfo.Name;
+            }
+            else
+            {
+                keyValues.Add("ErrorState", "Local file not found");
+                return keyValues;
+            }
+            string VaultFilePath = ConvertLocalPathToVaultPath(LocalFullFileName) + "/" + FileName;
+
+            //get the file object consuming the Vault Path; if the file does not exist return the file-non-exist status information
+            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
+            ACW.File mFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { VaultFilePath }).FirstOrDefault();
+
+            if (mFile.Id == -1)// file not found
+            {
+                keyValues.Add("ErrorState", "File does not exist in Vault.");
+                return keyValues;
+            }
+
+            VDF.Vault.Currency.Entities.FileIteration mFileIteration = new VDF.Vault.Currency.Entities.FileIteration(conn, mFile);
+
+            PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+            PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+            EntityStatusImageInfo status = conn.PropertyManager.GetPropertyValue(mFileIteration, mVaultStatus, null) as EntityStatusImageInfo;
+
+            keyValues.Add("CheckOutState", status.Status.CheckoutState.ToString());
+            keyValues.Add("ConsumableState", status.Status.ConsumableState.ToString());
+            keyValues.Add("ErrorState", status.Status.ErrorState.ToString());
+            keyValues.Add("LocalEditsState", status.Status.LocalEditsState.ToString());
+            keyValues.Add("LockState", status.Status.LockState.ToString());
+            keyValues.Add("RevisionState", status.Status.RevisionState.ToString());
+            keyValues.Add("VersionState", status.Status.VersionState.ToString());
+
+            return keyValues;
         }
 
         private bool IsCadFile(System.IO.FileInfo FileInfo)

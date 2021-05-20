@@ -117,6 +117,7 @@
     <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFile.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFileAndAttach.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
