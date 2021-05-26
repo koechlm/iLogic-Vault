@@ -95,7 +95,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 var folderEntity = new Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities.Folder(conn, mFolder);
                 try
                 {
-                    addedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic rule", null, null, ACW.FileClassification.None, false, vdfPath);
+                    addedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic-VaultInventorServer rule", null, null, ACW.FileClassification.None, false, vdfPath);
                     return true;
                 }
                 catch (Exception ex)
@@ -118,7 +118,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
                     var results = conn.FileManager.AcquireFiles(aqSettings);
                     try
                     {
-                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
+                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic-VaultInventorServer rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
                         return true;
                     }
                     catch (Exception ex)
@@ -174,7 +174,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
                 var folderEntity = new Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities.Folder(conn, mFolder);
                 try
                 {
-                    mUploadedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic rule", null, null, ACW.FileClassification.None, false, vdfPath);
+                    mUploadedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic-VaultInventorServer rule", null, null, ACW.FileClassification.None, false, vdfPath);
                 }
                 catch (Exception)
                 {
@@ -196,7 +196,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
                     var results = conn.FileManager.AcquireFiles(aqSettings);
                     try
                     {
-                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
+                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic-VaultInventorServer rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
                     }
                     catch (Exception)
                     {
@@ -227,7 +227,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
                         {
                             DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
                         };
-                        acquireFilesSettings.CheckoutComment = "iLogic-Rule is about attaching an uploaded file.";
+                        acquireFilesSettings.CheckoutComment = "iLogic-VaultInventorServer Rule is about attaching an uploaded file.";
                         acquireFilesSettings.AddEntityToAcquire(mParFileIteration);
                         //Check-out and evaluate the results
                         VDF.Vault.Results.AcquireFilesResults acquireFilesResults = conn.FileManager.AcquireFiles(acquireFilesSettings);
@@ -278,7 +278,7 @@ namespace QuickstartiLogicVltInvSrvLibrary
 
                             //check-in the file providing the updated associations;
                             System.IO.Stream stream = null;
-                            VDF.Vault.Currency.Entities.FileIteration mUpdatedParent = conn.FileManager.CheckinFile(mNewFileIteration, "iLogic-Rule attached " + mUploadedFile.EntityName, false, DateTime.Now, mFileAssocParamArray,
+                            VDF.Vault.Currency.Entities.FileIteration mUpdatedParent = conn.FileManager.CheckinFile(mNewFileIteration, "iLogic-VaultInventorServer Rule attached " + mUploadedFile.EntityName, false, DateTime.Now, mFileAssocParamArray,
                                null, true, mNewFileIteration.EntityName, mNewFileIteration.FileClassification, false, stream);
                             if (mUpdatedParent.EntityIterationId == -1)
                             {
