@@ -45,6 +45,7 @@ namespace QuickstartiLogicLibrary
             }
         }
 
+
         /// <summary>
         /// Deprecated. Returns current Vault connection. Leverage LoggedIn property whenever possible. 
         /// Null value returned if user is not logged in.
@@ -143,7 +144,7 @@ namespace QuickstartiLogicLibrary
         /// provide Vault path and file name ('$/...') of parent file to attach to</param>
         /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for IAM, IPN, IDW/DWG.
         /// Returns false if the file added, but could not attach to the parent.</returns>
-        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, bool DisableCheckInDesignFiles = true , string ParentFileToAttachTo = null)
+        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, bool DisableCheckInDesignFiles = true, string ParentFileToAttachTo = null)
         {
             //exclude CAD files with references
             System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
@@ -309,10 +310,10 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// 
+        /// Convert the local file or folder path to the corresponding path in Vault.
         /// </summary>
         /// <param name="LocalPath">File or Folder path in local working folder</param>
-        /// <returns>Vault Folder Path; if LocalPath is a Filepath, the file's parent Folderpath returns</returns>
+        /// <returns>Vault Folder Path; if LocalPath is a file path, the file's parent Folder Path returns</returns>
         public string ConvertLocalPathToVaultPath(string LocalPath)
         {
             string mVaultPath = null;
@@ -358,7 +359,7 @@ namespace QuickstartiLogicLibrary
         /// returns "FileNotFound if file does not exist at indicated location.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
-        /// <param name="VaultFullFileName">Full Vault File Path of format '$\...\*.*'</param>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default.</param>
         /// <returns>Local path/filename</returns>
         public string GetFileByFullFilePath(string VaultFullFileName, bool CheckOut = false)
@@ -411,10 +412,10 @@ namespace QuickstartiLogicLibrary
         /// File Properties return all values converted to text. Access the value using the Vault property display name as key.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
-        /// <param name="VaultFullFileName"></param>
-        /// <param name="VaultFileProperties"></param>
-        /// <param name="CheckOut"></param>
-        /// <returns></returns>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="CheckOut">Default value is 'False'; set to 'True' to check-out the downloaded file</param>
+        /// <returns>Local path/filename</returns>
         public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties, bool CheckOut = false)
         {
             List<string> mFiles = new List<string>();
@@ -469,11 +470,11 @@ namespace QuickstartiLogicLibrary
         /// File and Item property dictionaries return all values converted to text. Access the value using the Vault property display name as key.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
-        /// <param name="VaultFullFileName"></param>
-        /// <param name="VaultFileProperties"></param>
-        /// <param name="VaultItemProperties"></param>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="VaultItemProperties">pairs of Vault Item property display name and property value</param>
         /// <param name="CheckOut"></param>
-        /// <returns></returns>
+        /// <returns>Local path/filename</returns>
         public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties,
             ref Dictionary<string, string> VaultItemProperties, bool CheckOut = false)
         {
@@ -589,7 +590,7 @@ namespace QuickstartiLogicLibrary
         /// Create new file name using default or named numbering scheme.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
-        /// <param name="VaultFullFileName">Vault FullFilePath of source file</param>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="NumberingScheme">Individual scheme name or 'Default'</param>
         /// <param name="InputParams">Optional according scheme definition. User input values in order of scheme configuration</param>
         /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
@@ -665,7 +666,7 @@ namespace QuickstartiLogicLibrary
         /// Create new file name re-using source file's extension and new file name variable.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
-        /// <param name="VaultFullFileName">Vault FullFilePath of source file</param>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="NewFileNameNoExt">New name without extension</param>
         /// <param name="CheckOut">Optional. File copy will check-out as default.</param>
         /// <param name="UpdatePartNumber">Optional. Update Part Number property to match new file name</param>
@@ -694,7 +695,7 @@ namespace QuickstartiLogicLibrary
                 ACW.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                 mPropDictonary.Add(propDef, mNewFileName);
 
-                UpdateFileProperties((ACW.File)mFileIt, mPropDictonary);
+                UpdateFileProperties(mFileIt, mPropDictonary);
                 mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
             }
 
@@ -832,7 +833,7 @@ namespace QuickstartiLogicLibrary
         /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
-        /// <param name="VaultFileProperties">Dictonary of properties/values to fill</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
         /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default</param>
         /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
@@ -926,8 +927,8 @@ namespace QuickstartiLogicLibrary
         /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
-        /// <param name="VaultFileProperties">Dictonary of properties/values to fill</param>
-        /// <param name="VaultItemProperties">Dictonary of properties/values to fill if linked to item</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="VaultItemProperties">pairs of Vault Item property display name and property value</param>
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
         /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default</param>
         /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
@@ -1293,7 +1294,7 @@ namespace QuickstartiLogicLibrary
                     ACW.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                     mPropDictonary.Add(propDef, mNewFileName);
 
-                    UpdateFileProperties((ACW.File)mFileIt, mPropDictonary);
+                    UpdateFileProperties(mFileIt, mPropDictonary);
                     mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
                 }
 
@@ -1513,7 +1514,7 @@ namespace QuickstartiLogicLibrary
         /// <summary>
         /// Download Thumbnail Image of the given file as Image file.
         /// </summary>
-        /// <param name="VaultFullFileName">Full Vault source file path of format '$\...\*.*'</param>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="Width">Optional. Image pixel size</param>
         /// <param name="Height">Optional. Image pixel size.</param>
         /// <returns>Full file path of image file (*.jpg)</returns>
@@ -1624,7 +1625,7 @@ namespace QuickstartiLogicLibrary
         /// <summary>
         /// Get Thumbnail of the given file as Image object.
         /// </summary>
-        /// <param name="VaultFullFileName">Full Vault source file path of format '$\...\*.*'</param>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="Width">Optional. Image pixel size</param>
         /// <param name="Height">Optional. Image pixel size.</param>
         /// <returns>System.Drawing.Image object</returns>
@@ -1787,18 +1788,62 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// Prepared for future use.
+        /// Update multiple Vault file properties
         /// </summary>
-        /// <param name="mFile"></param>
-        /// <param name="mPropDictonary"></param>
-        /// <returns></returns>
-        private bool UpdateFileProperties(ACW.File mFile, Dictionary<ACW.PropDef, object> mPropDictonary)
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="GetLatestFile">Option to download the updated file from Vault; default is true.</param>
+        /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
+        public bool UpdateVaultFileProperties(string VaultFullFileName, Dictionary<string, string> VaultFileProperties, bool GetLatestFile = true)
+        {
+            //convert the given file path to the file object
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            ACW.File mFile = wsFiles.FirstOrDefault();
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            Dictionary<ACW.PropDef, object> mPropDictonary = new Dictionary<ACW.PropDef, object>();
+            ACW.PropDef propDef = new ACW.PropDef();
+            ACW.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+            foreach (var item in VaultFileProperties)
+            {
+                propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
+                mPropDictonary.Add(propDef, item.Value);
+            }
+            //add a comment that iLogic-Vault edited properties
+            propDef = propDefs.SingleOrDefault(n => n.SysName == "Comment");
+            mPropDictonary.Add(propDef, "Property Edit by iLogic-Vault");
+
+            bool success = UpdateFileProperties(mFileIt, mPropDictonary);
+            if (success)
+            {
+                if (GetLatestFile == true)
+                {
+                    string latestFile = GetFileByFullFilePath(VaultFullFileName, false);
+                }
+                return true;
+            }
+            return false;
+
+        }
+
+
+
+        /// <summary>
+        /// Update the property dictonary of the given file.
+        /// </summary>
+        /// <param name="File"></param>
+        /// <param name="PropDictionary"></param>
+        /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
+        private bool UpdateFileProperties(ACW.File File, Dictionary<ACW.PropDef, object> PropDictionary)
         {
             try
             {
                 ACET.IExplorerUtil mExplUtil = Autodesk.Connectivity.Explorer.ExtensibilityTools.ExplorerLoader.LoadExplorerUtil(
                                             conn.Server, conn.Vault, conn.UserID, conn.Ticket);
-                mExplUtil.UpdateFileProperties(mFile, mPropDictonary);
+                mExplUtil.UpdateFileProperties(File, PropDictionary);
                 return true;
             }
             catch
@@ -1970,6 +2015,12 @@ namespace QuickstartiLogicLibrary
             }
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item">Autodesk Connectivity Webservice Item object</param>
+        /// <param name="VaultItemProperties">pairs of Vault Item property display name and property value</param>
         private void mGetItemProps(ACW.Item item, ref Dictionary<string, string> VaultItemProperties)
         {
             string mPropDispName = null;
