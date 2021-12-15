@@ -1847,9 +1847,6 @@ namespace QuickstartiLogicLibrary
                 propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
                 mPropDictionary.Add(propDef, item.Value);
             }
-            //add a comment that iLogic-Vault edited properties
-            //propDef = propDefs.SingleOrDefault(n => n.SysName == "Comment");
-            //mPropDictionary.Add(propDef, "Property Edit by iLogic-Vault");
 
             bool success = mUpdateFileProperties(mFileIt, mPropDictionary);
             if (success)
@@ -1863,6 +1860,7 @@ namespace QuickstartiLogicLibrary
             return false;
 
         }
+
 
 
         /// <summary>
