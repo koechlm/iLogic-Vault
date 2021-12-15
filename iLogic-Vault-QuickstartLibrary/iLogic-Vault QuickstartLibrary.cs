@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
+using System.Reflection;
 
 using ACET = Autodesk.Connectivity.Explorer.ExtensibilityTools;
 using ACW = Autodesk.Connectivity.WebServices;
@@ -28,7 +30,31 @@ namespace QuickstartiLogicLibrary
         /// Any Vault interaction requires an active Client-Server connection.
         /// To avoid Vault API specific references, check connection state using the loggedIn property.
         /// </summary>
-        private VDF.Vault.Currency.Connections.Connection conn = VltBase.ConnectionManager.Instance.Connection;
+        private readonly VDF.Vault.Currency.Connections.Connection conn = VltBase.ConnectionManager.Instance.Connection;
+
+        /// <summary>
+        /// Some methods are not applicable to Vault Basic; we need to know the environment
+        /// </summary>
+        private readonly ACW.Product[] mProducts = VltBase.ConnectionManager.Instance.Connection.WebServiceManager.InformationService.GetSupportedProducts();
+
+        /// <summary>
+        /// Indicates Vault Basic environment
+        /// </summary>
+        private bool IsVaultBasic
+        {
+            get
+            {
+                //Vault Basic Servers return only a single product, whereas Vault Pro returns 4
+                if (mProducts.Length == 1)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        //avoid multiple server calls for the iLogic-Vault session
+        private ACW.PropDef[] propDefs = null;
 
         /// <summary>
         /// Property representing the current user's Vault connection state; returns true, if current user is logged in.
@@ -619,11 +645,14 @@ namespace QuickstartiLogicLibrary
             {
                 Dictionary<ACW.PropDef, object> mPropDictonary = new Dictionary<ACW.PropDef, object>();
 
-                ACW.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                if (propDefs == null)
+                {
+                    propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+                }
                 ACW.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                 mPropDictonary.Add(propDef, mNewNumber);
 
-                UpdateFileProperties((ACW.File)mFileIt, mPropDictonary);
+                mUpdateFileProperties((ACW.File)mFileIt, mPropDictonary);
                 mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
             }
 
@@ -695,7 +724,7 @@ namespace QuickstartiLogicLibrary
                 ACW.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                 mPropDictonary.Add(propDef, mNewFileName);
 
-                UpdateFileProperties(mFileIt, mPropDictonary);
+                mUpdateFileProperties(mFileIt, mPropDictonary);
                 mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
             }
 
@@ -1185,7 +1214,7 @@ namespace QuickstartiLogicLibrary
                     ACW.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                     mPropDictonary.Add(propDef, mNewNumber);
 
-                    UpdateFileProperties((ACW.File)mFileIt, mPropDictonary);
+                    mUpdateFileProperties((ACW.File)mFileIt, mPropDictonary);
                     mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
                 }
 
@@ -1294,7 +1323,7 @@ namespace QuickstartiLogicLibrary
                     ACW.PropDef propDef = propDefs.SingleOrDefault(n => n.SysName == "PartNumber");
                     mPropDictonary.Add(propDef, mNewFileName);
 
-                    UpdateFileProperties(mFileIt, mPropDictonary);
+                    mUpdateFileProperties(mFileIt, mPropDictonary);
                     mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, conn.WebServiceManager.DocumentService.GetLatestFileByMasterId(mFileIt.EntityMasterId));
                 }
 
@@ -1788,7 +1817,7 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// Update multiple Vault file properties
+        /// Update multiple Vault file properties. Not available for Vault Basic.
         /// </summary>
         /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
@@ -1796,6 +1825,12 @@ namespace QuickstartiLogicLibrary
         /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
         public bool UpdateVaultFileProperties(string VaultFullFileName, Dictionary<string, string> VaultFileProperties, bool GetLatestFile = true)
         {
+            //this method is available for Vault Workgroup and Professional only.
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method UpdateVaultFileProperties is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
             //convert the given file path to the file object
             List<string> mFiles = new List<string>();
             List<String> mFilesDownloaded = new List<string>();
@@ -1804,19 +1839,19 @@ namespace QuickstartiLogicLibrary
             ACW.File mFile = wsFiles.FirstOrDefault();
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
-            Dictionary<ACW.PropDef, object> mPropDictonary = new Dictionary<ACW.PropDef, object>();
+            Dictionary<ACW.PropDef, object> mPropDictionary = new Dictionary<ACW.PropDef, object>();
             ACW.PropDef propDef = new ACW.PropDef();
             ACW.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
             foreach (var item in VaultFileProperties)
             {
                 propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
-                mPropDictonary.Add(propDef, item.Value);
+                mPropDictionary.Add(propDef, item.Value);
             }
             //add a comment that iLogic-Vault edited properties
-            propDef = propDefs.SingleOrDefault(n => n.SysName == "Comment");
-            mPropDictonary.Add(propDef, "Property Edit by iLogic-Vault");
+            //propDef = propDefs.SingleOrDefault(n => n.SysName == "Comment");
+            //mPropDictionary.Add(propDef, "Property Edit by iLogic-Vault");
 
-            bool success = UpdateFileProperties(mFileIt, mPropDictonary);
+            bool success = mUpdateFileProperties(mFileIt, mPropDictionary);
             if (success)
             {
                 if (GetLatestFile == true)
@@ -1830,27 +1865,44 @@ namespace QuickstartiLogicLibrary
         }
 
 
-
         /// <summary>
-        /// Update the property dictonary of the given file.
+        /// Update the property dictionary of the given file.
         /// </summary>
         /// <param name="File"></param>
         /// <param name="PropDictionary"></param>
         /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
-        private bool UpdateFileProperties(ACW.File File, Dictionary<ACW.PropDef, object> PropDictionary)
+        private bool mUpdateFileProperties(ACW.File File, Dictionary<ACW.PropDef, object> PropDictionary)
         {
             try
             {
-                ACET.IExplorerUtil mExplUtil = Autodesk.Connectivity.Explorer.ExtensibilityTools.ExplorerLoader.LoadExplorerUtil(
-                                            conn.Server, conn.Vault, conn.UserID, conn.Ticket);
+                ACET.Product mProduct = null;
+                switch (mProducts.Length)
+                {
+                    case 1: mProduct = ACET.Product.Vault;
+                        break;
+                    case 2:
+                        mProduct = ACET.Product.VaultWorkgroup;
+                        break;
+                    case 4:
+                        mProduct = ACET.Product.VaultProfessional;
+                        break;
+                    default: return false;
+                }
+                string mAppPath = ACET.ExplorerLoader.GetExePath(mProduct);
+                System.IO.FileInfo fileInfo = new System.IO.FileInfo(mAppPath);
+                string mLoadPath = fileInfo.DirectoryName;
+                ACET.IExplorerUtil mExplUtil = ACET.ExplorerLoader.LoadExplorerUtil(mProduct, conn.Server, conn.Vault, conn.UserID, conn.Ticket, mLoadPath, null);
+                //ACET.IExplorerUtil mExplUtil = ACET.ExplorerLoader.LoadExplorerUtil(
+                //                             conn.Server, conn.Vault, conn.UserID, conn.Ticket);
                 mExplUtil.UpdateFileProperties(File, PropDictionary);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
                 return false;
             }
         }
+
 
         private Image GetThumbnailImage(VDF.Vault.Currency.Entities.FileIteration fileIteration, int Width, int Height)
         {
