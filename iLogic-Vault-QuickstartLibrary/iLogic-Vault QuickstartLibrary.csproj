@@ -61,29 +61,35 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autodesk.Connectivity.Explorer.Extensibility">
-      <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.Explorer.Extensibility.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
-      <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autodesk.Connectivity.Extensibility.Framework">
+      <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.Extensibility.Framework.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Autodesk.Connectivity.WebServices">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\Autodesk Vault 2022.2 SDK\bin\x64\Autodesk.Connectivity.WebServices.dll</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.dll</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Autodesk.DataManagement.Client.Framework.Vault">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.DataManagement.Client.Framework.Vault.dll</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Connectivity.Application.VaultBase">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Inventor 2022 Bin\Connectivity.Application.VaultBase.dll</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -191,6 +197,7 @@
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_UpdateVaultFileProperties.iLogicVb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

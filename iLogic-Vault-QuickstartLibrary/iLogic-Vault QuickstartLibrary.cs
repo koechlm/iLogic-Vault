@@ -35,17 +35,34 @@ namespace QuickstartiLogicLibrary
         /// <summary>
         /// Some methods are not applicable to Vault Basic; we need to know the environment
         /// </summary>
-        private readonly ACW.Product[] mProducts = VltBase.ConnectionManager.Instance.Connection.WebServiceManager.InformationService.GetSupportedProducts();
+        private static readonly ACW.Product[] mProducts = VltBase.ConnectionManager.Instance.Connection.WebServiceManager.InformationService.GetSupportedProducts();
+
+        private readonly bool IsVaultPro = mIsVaultPro;
+
+        private readonly bool IsVaultBasic = mIsVaultBasic;
 
         /// <summary>
         /// Indicates Vault Basic environment
         /// </summary>
-        private bool IsVaultBasic
+        private static bool mIsVaultBasic
         {
             get
             {
                 //Vault Basic Servers return only a single product, whereas Vault Pro returns 4
                 if (mProducts.Length == 1)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        private static bool mIsVaultPro
+        {
+            get
+            {
+                //Vault Pro return 4 products
+                if (mProducts.Length == 4)
                 {
                     return true;
                 }
@@ -86,78 +103,78 @@ namespace QuickstartiLogicLibrary
             return null;
         }
 
-        /// <summary>
-        /// Adds local file to Vault.
-        /// </summary>
-        /// <param name="FullFileName">File path and name of file to add in local working folder.</param>
-        /// <param name="VaultFolderPath">Full path in Vault, e.g. "$/Designs/P-00000</param>
-        /// <param name="UpdateExisting">Creates new file version if existing file is available for check-out.</param>
-        /// <param name="DisableCheckInDesignFiles">The recommended default blocking Inventor, AutoCAD, Navisworks, Microstation, Solidworks and PRO-E files to maintain file relationships. Disable for exeptions like single dwg export files only.</param>
-        /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for design files if default option applies.</returns>
-        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, bool DisableCheckInDesignFiles = true)
-        {
-            //exclude CAD files with references
-            System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
-            if (DisableCheckInDesignFiles == true)
-            {
-                if (IsCadFile(mLocalFileInfo))
-                {
-                    return false;
-                }
-            }
+        ///// <summary>
+        ///// Adds local file to Vault.
+        ///// </summary>
+        ///// <param name="FullFileName">File path and name of file to add in local working folder.</param>
+        ///// <param name="VaultFolderPath">Full path in Vault, e.g. "$/Designs/P-00000</param>
+        ///// <param name="UpdateExisting">Creates new file version if existing file is available for check-out.</param>
+        ///// <param name="DisableCheckInDesignFiles">The recommended default blocking Inventor, AutoCAD, Navisworks, Microstation, Solidworks and PRO-E files to maintain file relationships. Disable for exeptions like single dwg export files only.</param>
+        ///// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for design files if default option applies.</returns>
+        //public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, bool DisableCheckInDesignFiles = true)
+        //{
+        //    //exclude CAD files with references
+        //    System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
+        //    if (DisableCheckInDesignFiles == true)
+        //    {
+        //        if (IsCadFile(mLocalFileInfo))
+        //        {
+        //            return false;
+        //        }
+        //    }
 
-            Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
+        //    Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
 
-            ACW.Folder mFolder = mWsMgr.DocumentService.FindFoldersByPaths(new string[] { VaultFolderPath }).FirstOrDefault();
-            if (mFolder.Id == -1)
-            {
-                return false;
-            }
-            string vaultFilePath = System.IO.Path.Combine(mFolder.FullName, mLocalFileInfo.Name).Replace("\\", "/");
+        //    ACW.Folder mFolder = mWsMgr.DocumentService.FindFoldersByPaths(new string[] { VaultFolderPath }).FirstOrDefault();
+        //    if (mFolder.Id == -1)
+        //    {
+        //        return false;
+        //    }
+        //    string vaultFilePath = System.IO.Path.Combine(mFolder.FullName, mLocalFileInfo.Name).Replace("\\", "/");
 
-            ACW.File wsFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { vaultFilePath }).First();
+        //    ACW.File wsFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { vaultFilePath }).First();
 
-            VDF.Currency.FilePathAbsolute vdfPath = new VDF.Currency.FilePathAbsolute(mLocalFileInfo.FullName);
-            VDF.Vault.Currency.Entities.FileIteration vdfFile = null;
-            VDF.Vault.Currency.Entities.FileIteration addedFile = null;
-            VDF.Vault.Currency.Entities.FileIteration mUploadedFile = null;
-            if (wsFile == null || wsFile.Id < 0)
-            {
-                // add new file to Vault
-                var folderEntity = new Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities.Folder(conn, mFolder);
-                try
-                {
-                    addedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic-Vault rule", null, null, ACW.FileClassification.None, false, vdfPath);
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (UpdateExisting == true)
-                {
-                    // checkin new file version
-                    VDF.Vault.Settings.AcquireFilesSettings aqSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
-                    {
-                        DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
-                    };
-                    vdfFile = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
-                    aqSettings.AddEntityToAcquire(vdfFile);
-                    var results = conn.FileManager.AcquireFiles(aqSettings);
-                    try
-                    {
-                        mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic-Vault rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
-                    }
-                    catch (Exception)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
+        //    VDF.Currency.FilePathAbsolute vdfPath = new VDF.Currency.FilePathAbsolute(mLocalFileInfo.FullName);
+        //    VDF.Vault.Currency.Entities.FileIteration vdfFile = null;
+        //    VDF.Vault.Currency.Entities.FileIteration addedFile = null;
+        //    VDF.Vault.Currency.Entities.FileIteration mUploadedFile = null;
+        //    if (wsFile == null || wsFile.Id < 0)
+        //    {
+        //        // add new file to Vault
+        //        var folderEntity = new Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities.Folder(conn, mFolder);
+        //        try
+        //        {
+        //            addedFile = conn.FileManager.AddFile(folderEntity, "Added by iLogic-Vault rule", null, null, ACW.FileClassification.None, false, vdfPath);
+        //        }
+        //        catch
+        //        {
+        //            return false;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (UpdateExisting == true)
+        //        {
+        //            // checkin new file version
+        //            VDF.Vault.Settings.AcquireFilesSettings mCheckOutSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
+        //            {
+        //                DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
+        //            };
+        //            vdfFile = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
+        //            mCheckOutSettings.AddEntityToAcquire(vdfFile);
+        //            var results = conn.FileManager.AcquireFiles(mCheckOutSettings);
+        //            try
+        //            {
+        //                mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic-Vault rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
+        //            }
+        //            catch (Exception)
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //    }
+        //    return true;
+        //}
 
         /// <summary>
         /// Adds local file to Vault and optionally attaches it to a parent file.
@@ -215,13 +232,13 @@ namespace QuickstartiLogicLibrary
                 if (UpdateExisting == true)
                 {
                     // checkin new file version
-                    VDF.Vault.Settings.AcquireFilesSettings aqSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
+                    VDF.Vault.Settings.AcquireFilesSettings mCheckOutSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
                     {
                         DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
                     };
                     vdfFile = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
-                    aqSettings.AddEntityToAcquire(vdfFile);
-                    var results = conn.FileManager.AcquireFiles(aqSettings);
+                    mCheckOutSettings.AddEntityToAcquire(vdfFile);
+                    var results = conn.FileManager.AcquireFiles(mCheckOutSettings);
                     try
                     {
                         mUploadedFile = conn.FileManager.CheckinFile(results.FileResults.First().File, "Created by iLogic-Vault rule", false, null, null, false, null, ACW.FileClassification.None, false, vdfPath);
@@ -251,14 +268,14 @@ namespace QuickstartiLogicLibrary
                     //try to check-out the file;
                     try
                     {
-                        VDF.Vault.Settings.AcquireFilesSettings acquireFilesSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
+                        VDF.Vault.Settings.AcquireFilesSettings mCheckOutSettings = new VDF.Vault.Settings.AcquireFilesSettings(conn)
                         {
                             DefaultAcquisitionOption = VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout
                         };
-                        acquireFilesSettings.CheckoutComment = "iLogic-Vault Rule is about attaching an uploaded file.";
-                        acquireFilesSettings.AddEntityToAcquire(mParFileIteration);
+                        mCheckOutSettings.CheckoutComment = "iLogic-Vault Rule is about attaching an uploaded file.";
+                        mCheckOutSettings.AddEntityToAcquire(mParFileIteration);
                         //Check-out and evaluate the results
-                        VDF.Vault.Results.AcquireFilesResults acquireFilesResults = conn.FileManager.AcquireFiles(acquireFilesSettings);
+                        VDF.Vault.Results.AcquireFilesResults acquireFilesResults = conn.FileManager.AcquireFiles(mCheckOutSettings);
                         if (acquireFilesResults.IsCancelled != true && acquireFilesResults.FileResults.First().Status == VDF.Vault.Results.FileAcquisitionResult.AcquisitionStatus.Success)
                         {
                             VDF.Vault.Currency.Entities.FileIteration mNewFileIteration = acquireFilesResults.FileResults.First().NewFileIteration;
@@ -615,6 +632,7 @@ namespace QuickstartiLogicLibrary
         /// Copy Vault file on file server and download using full file path, e.g. "$/Designs/Base.ipt".
         /// Create new file name using default or named numbering scheme.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Not available for Vault Basic.
         /// </summary>
         /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="NumberingScheme">Individual scheme name or 'Default'</param>
@@ -624,6 +642,12 @@ namespace QuickstartiLogicLibrary
         /// <returns>Local path/filename</returns>
         public string GetFileCopyBySourceFileNameAndAutoNumber(string VaultFullFileName, string NumberingScheme, string[] InputParams = null, bool CheckOut = true, bool UpdatePartNumber = true)
         {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetFileCopyBySourceFileNameAndAutoNumber is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
             //Get Vault File object
             List<string> mFiles = new List<string>();
             List<String> mFilesDownloaded = new List<string>();
@@ -694,6 +718,7 @@ namespace QuickstartiLogicLibrary
         /// Copy Vault file on file server and download using full file path, e.g. "$/Designs/Base.ipt".
         /// Create new file name re-using source file's extension and new file name variable.
         /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Not available for Vault Basic.
         /// </summary>
         /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
         /// <param name="NewFileNameNoExt">New name without extension</param>
@@ -702,6 +727,12 @@ namespace QuickstartiLogicLibrary
         /// <returns>Local path/filename</returns>
         public string GetFileCopyBySourceFileNameAndNewName(string VaultFullFileName, string NewFileNameNoExt, bool CheckOut = true, bool UpdatePartNumber = true)
         {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetFileCopyBySourceFileNameAndNewName is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
             //get Vault File object
             List<string> mFiles = new List<string>();
             List<String> mFilesDownloaded = new List<string>();
@@ -1153,6 +1184,7 @@ namespace QuickstartiLogicLibrary
         /// Downloads first file matching all or any search criterias.
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
         /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Not available for Vault Basic.
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>        
         /// <param name="NumberingScheme">Individual scheme name or 'Default'</param>
@@ -1164,6 +1196,12 @@ namespace QuickstartiLogicLibrary
         /// <returns>Local path/filenamen</returns>
         public string GetFileCopyBySourceFileSearchAndAutoNumber(Dictionary<string, string> SearchCriteria, string NumberingScheme, bool MatchAllCriteria = true, string[] InputParams = null, bool CheckOut = true, string[] FoldersSearched = null, bool UpdatePartNumber = true)
         {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetFileCopyBySourceFileSearchAndAutoNumber is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
             ACW.Folder[] mFldr;
             List<long> mFolders = new List<long>();
@@ -1268,6 +1306,7 @@ namespace QuickstartiLogicLibrary
         /// Downloads first file matching all or any search criterias.
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
         /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Not available for Vault Basic.
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>        
         /// <param name="NewFileNameNoExt">New name without extension</param>
@@ -1278,6 +1317,12 @@ namespace QuickstartiLogicLibrary
         /// <returns>Local path/filename</returns>
         public string GetFileCopyBySourceFileSearchAndNewName(Dictionary<string, string> SearchCriteria, string NewFileNameNoExt, bool MatchAllCriteria = true, bool CheckOut = true, string[] FoldersSearched = null, bool UpdatePartNumber = true)
         {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetFileCopyBySourceFileSearchAndNewName is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
             //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
             ACW.Folder[] mFldr;
             List<long> mFolders = new List<long>();
@@ -1784,8 +1829,16 @@ namespace QuickstartiLogicLibrary
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.RecurseChildren = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeAttachments = true;
                 settings.OptionsRelationshipGathering.FileRelationshipSettings.IncludeLibraryContents = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.ReleaseBiased = true;
-                settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Revision;
+                if (IsVaultBasic)
+                {
+                    settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Actual;
+                }
+                else
+                {
+                    settings.OptionsRelationshipGathering.FileRelationshipSettings.ReleaseBiased = true;
+                    settings.OptionsRelationshipGathering.FileRelationshipSettings.VersionGatheringOption = VDF.Vault.Currency.VersionGatheringOption.Revision;
+                }
+
                 settings.OptionsRelationshipGathering.IncludeLinksSettings.IncludeLinks = false;
                 VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions mResOpt = new VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions();
                 mResOpt.OverwriteOption = VDF.Vault.Settings.AcquireFilesSettings.AcquireFileResolutionOptions.OverwriteOptions.ForceOverwriteAll;
@@ -1845,7 +1898,11 @@ namespace QuickstartiLogicLibrary
             foreach (var item in VaultFileProperties)
             {
                 propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
-                mPropDictionary.Add(propDef, item.Value);
+                if (propDef != null)
+                {
+                    mPropDictionary.Add(propDef, item.Value);
+                }
+
             }
 
             bool success = mUpdateFileProperties(mFileIt, mPropDictionary);
@@ -1862,7 +1919,6 @@ namespace QuickstartiLogicLibrary
         }
 
 
-
         /// <summary>
         /// Update the property dictionary of the given file.
         /// </summary>
@@ -1873,29 +1929,12 @@ namespace QuickstartiLogicLibrary
         {
             try
             {
-                ACET.Product mProduct = null;
-                switch (mProducts.Length)
-                {
-                    case 1: mProduct = ACET.Product.Vault;
-                        break;
-                    case 2:
-                        mProduct = ACET.Product.VaultWorkgroup;
-                        break;
-                    case 4:
-                        mProduct = ACET.Product.VaultProfessional;
-                        break;
-                    default: return false;
-                }
-                string mAppPath = ACET.ExplorerLoader.GetExePath(mProduct);
-                System.IO.FileInfo fileInfo = new System.IO.FileInfo(mAppPath);
-                string mLoadPath = fileInfo.DirectoryName;
-                ACET.IExplorerUtil mExplUtil = ACET.ExplorerLoader.LoadExplorerUtil(mProduct, conn.Server, conn.Vault, conn.UserID, conn.Ticket, mLoadPath, null);
-                //ACET.IExplorerUtil mExplUtil = ACET.ExplorerLoader.LoadExplorerUtil(
-                //                             conn.Server, conn.Vault, conn.UserID, conn.Ticket);
+                ACET.IExplorerUtil mExplUtil = ACET.ExplorerLoader.LoadExplorerUtil(
+                                             conn.Server, conn.Vault, conn.UserID, conn.Ticket);
                 mExplUtil.UpdateFileProperties(File, PropDictionary);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -1907,7 +1946,7 @@ namespace QuickstartiLogicLibrary
             try
             {
                 VDF.Vault.Currency.Properties.PropertyDefinitionDictionary mPropDefs = conn.PropertyManager.GetPropertyDefinitions(
-                                        VDF.Vault.Currency.Entities.EntityClassIds.Files, null, VDF.Vault.Currency.Properties.PropertyDefinitionFilter.IncludeSystem);
+                                        VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeSystem);
                 VDF.Vault.Currency.Properties.PropertyDefinition mThmbNlPropDef = (mPropDefs.SingleOrDefault(n => n.Key == "Thumbnail").Value);
                 VDF.Vault.Currency.Properties.PropertyValueSettings mPropSetting = new VDF.Vault.Currency.Properties.PropertyValueSettings();
 
@@ -1944,7 +1983,7 @@ namespace QuickstartiLogicLibrary
                         new System.Drawing.Imaging.Metafile(ms);
                     retVal = metafile.GetThumbnailImage(width, height,
                         new System.Drawing.Image.GetThumbnailImageAbort(GetThumbnailImageAbort),
-                        System.IntPtr.Zero);
+                        IntPtr.Zero);
                 }
                 catch
                 {
@@ -1959,10 +1998,10 @@ namespace QuickstartiLogicLibrary
                     {
                         // try to stream to System.Drawing.Image 
                         ms.Seek(0, System.IO.SeekOrigin.Begin);
-                        System.Drawing.Image rawImage = System.Drawing.Image.FromStream(ms, true);
+                        System.Drawing.Image rawImage = Image.FromStream(ms, true);
                         retVal = rawImage.GetThumbnailImage(width, height,
                             new System.Drawing.Image.GetThumbnailImageAbort(GetThumbnailImageAbort),
-                            System.IntPtr.Zero);
+                            IntPtr.Zero);
                     }
                     catch
                     {
