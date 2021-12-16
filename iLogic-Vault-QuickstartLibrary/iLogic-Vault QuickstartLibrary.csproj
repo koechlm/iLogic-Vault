@@ -64,12 +64,12 @@
     <Reference Include="Autodesk.Connectivity.Explorer.ExtensibilityTools">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.Connectivity.Extensibility.Framework">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\SDK References 2022\Autodesk Vault 2022 SDK\bin\x64\Autodesk.Connectivity.Extensibility.Framework.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Autodesk.Connectivity.WebServices">
       <HintPath>..\..\..\..\..\OneDrive - Autodesk\Vault Customization\Autodesk Vault 2022.2 SDK\bin\x64\Autodesk.Connectivity.WebServices.dll</HintPath>
