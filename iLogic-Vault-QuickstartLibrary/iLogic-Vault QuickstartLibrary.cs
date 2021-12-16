@@ -1829,7 +1829,6 @@ namespace QuickstartiLogicLibrary
                 {
                     mPropDictionary.Add(propDef, item.Value);
                 }
-
             }
 
             bool success = mUpdateFileProperties(mFileIt, mPropDictionary);
