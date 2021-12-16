@@ -1,0 +1,45 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+	break
+	'check for VDSI availability to load Vault ExtensibilityTools from there; 
+	Dim version As String = ThisApplication.ComparisonVersion
+'	Dim assem, assem2 As Object
+'	Dim VdsI As Inventor.ApplicationAddIn = ThisApplication.ApplicationAddIns.ItemById("{3ad251e3-02dd-4b8c-8882-86c97c80e00c}")
+'	If VdsI.Activated = True Then
+'		assem = System.Reflection.Assembly.LoadFrom("C:\ProgramData\Autodesk\ApplicationPlugins\VDSI" + version + ".bundle\Contents\Autodesk.Connectivity.Extensibility.Framework.dll")
+'		assem2 = System.Reflection.Assembly.LoadFrom("C:\ProgramData\Autodesk\ApplicationPlugins\VDSI" + version + ".bundle\Contents\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
+'	Else
+		'alternate and always available, load Vault ExtensibilityTools from Vault Client installation
+		'assem = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Extensibility.Framework.dll")
+		'assem2 = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
+'	End If
+
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+
+	'Build one to many name/value pairs of Property/Value;
+	Dim mPropNameValueMap As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mPropNameValueMap.Add("Comments", "Property Edit by iLogic Rule")
+	mPropNameValueMap.Add("Title", "Date:" + Date.Now)
+
+	'we need the file's path in Vault; you can convert the local file path to the corresponding Vault virtual path
+	Dim mVaultFileName As String = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Path) + "/" + ThisDoc.FileName(True)
+
+	Dim success As Boolean = iLogicVault.UpdateVaultFileProperties(mVaultFileName, mPropNameValueMap)
+	If success = False Then
+		Logger.Error("Update Properties failed; either the file does not exist at the given full file name/path or is not available for check out.")
+	Else
+		Logger.Info("File " & mVaultFile & " downloaded.")
+	End If
+
+End Sub

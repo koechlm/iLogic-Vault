@@ -60,8 +60,8 @@ Sub Main
 		'upload file as new or incremental file iteration and attach to thisdoc in Vault
 		Dim mVaultPath As String = iLogicVault.ConvertLocalPathToVaultPath(bitmapName)
 		Dim mParentVaultFullFileName = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Document.FullFileName) + "/" + ThisDoc.FileName(True)
-		success = iLogicVault.AddFile(bitmapName, mVaultPath, True, mParentVaultFullFileName)
-		If (success <> True)
+		success = iLogicVault.AddFile(bitmapName, mVaultPath, True, , mParentVaultFullFileName)
+		If (success <> True)Then
 			Logger.Error("Failed to add/update image file to Vault")
 		Else
 			Logger.Info("Successfully created, uploaded and attached image file.")
