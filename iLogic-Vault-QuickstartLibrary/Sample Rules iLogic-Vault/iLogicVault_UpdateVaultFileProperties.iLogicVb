@@ -7,18 +7,11 @@
 
 Sub Main
 	break
-	'check for VDSI availability to load Vault ExtensibilityTools from there; 
+	'updating properties requires loading of Vault ExtensibilityTools from Vault client installation; 
 	Dim version As String = ThisApplication.ComparisonVersion
-'	Dim assem, assem2 As Object
-'	Dim VdsI As Inventor.ApplicationAddIn = ThisApplication.ApplicationAddIns.ItemById("{3ad251e3-02dd-4b8c-8882-86c97c80e00c}")
-'	If VdsI.Activated = True Then
-'		assem = System.Reflection.Assembly.LoadFrom("C:\ProgramData\Autodesk\ApplicationPlugins\VDSI" + version + ".bundle\Contents\Autodesk.Connectivity.Extensibility.Framework.dll")
-'		assem2 = System.Reflection.Assembly.LoadFrom("C:\ProgramData\Autodesk\ApplicationPlugins\VDSI" + version + ".bundle\Contents\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
-'	Else
-		'alternate and always available, load Vault ExtensibilityTools from Vault Client installation
-		'assem = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Extensibility.Framework.dll")
-		'assem2 = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
-'	End If
+	Dim assem, assem2 As Object
+	assem = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Extensibility.Framework.dll")
+	assem2 = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
 
 	'enable iLogicVault commands and validate user's login state
 	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
@@ -27,10 +20,15 @@ Sub Main
 		Exit Sub
 	End If
 
-	'Build one to many name/value pairs of Property/Value;
-	Dim mPropNameValueMap As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mPropNameValueMap.Add("Comments", "Property Edit by iLogic Rule")
-	mPropNameValueMap.Add("Title", "Date:" + Date.Now)
+	'Build one to many name/value pairs of Property/Value; note the value has to be of the expected type like string (text), long (numbers), date (date/time), or bool (true/false)
+	Dim mPropNameValueMap As New Dictionary(Of String, Object) 'add UDP.DisplayName, UDP.Value object of matching type
+	mPropNameValueMap.Add("Title", "Property Edit at " + Date.Now.ToString)
+	Dim mDate As Date = Date.Now
+	mPropNameValueMap.Add("Checked Date", mDate)
+	Dim mNum As Decimal = 10.34
+	mPropNameValueMap.Add("Cost", mNum)
+	Dim mBool As Boolean = False
+	mPropNameValueMap.Add("Customer Approval Required", mBool)
 
 	'we need the file's path in Vault; you can convert the local file path to the corresponding Vault virtual path
 	Dim mVaultFileName As String = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Path) + "/" + ThisDoc.FileName(True)

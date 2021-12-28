@@ -1800,10 +1800,10 @@ namespace QuickstartiLogicLibrary
         /// Update multiple Vault file properties. Not available for Vault Basic.
         /// </summary>
         /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
-        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value of respective type</param>
         /// <param name="GetLatestFile">Option to download the updated file from Vault; default is true.</param>
         /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
-        public bool UpdateVaultFileProperties(string VaultFullFileName, Dictionary<string, string> VaultFileProperties, bool GetLatestFile = true)
+        public bool UpdateVaultFileProperties(string VaultFullFileName, Dictionary<string, object> VaultFileProperties, bool GetLatestFile = true)
         {
             //this method is available for Vault Workgroup and Professional only.
             if (IsVaultBasic)
@@ -1827,7 +1827,10 @@ namespace QuickstartiLogicLibrary
                 propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
                 if (propDef != null)
                 {
-                    mPropDictionary.Add(propDef, item.Value);
+                    if (item.GetType() == propDef.GetType())
+                    {
+                        mPropDictionary.Add(propDef, item.Value);
+                    }
                 }
             }
 
