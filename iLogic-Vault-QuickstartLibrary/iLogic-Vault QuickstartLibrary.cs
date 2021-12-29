@@ -223,8 +223,8 @@ namespace QuickstartiLogicLibrary
                             List<ACW.FileAssocParam> fileAssocParams = new List<ACW.FileAssocParam>();
                             foreach (ACW.FileAssocLite item in fileAssocsLite)
                             {
-                                //filter the parent associations 
-                                if (item.ParFileId == mNewFileIteration.EntityIterationId)
+                                //filter the parent associations and existing attachment of the uploaded file
+                                if (item.ParFileId == mNewFileIteration.EntityIterationId && item.CldFileId != mUploadedFile.EntityIterationId)
                                 {
                                     ACW.FileAssocParam param = new ACW.FileAssocParam();
                                     param.Typ = item.Typ;
@@ -239,10 +239,10 @@ namespace QuickstartiLogicLibrary
                             //create new association parameter of file to attach
                             ACW.FileAssocParam mNewParam = new ACW.FileAssocParam();
                             mNewParam.Typ = ACW.AssociationType.Attachment;
-                            mNewParam.RefId = null;
-                            mNewParam.Source = null;
+                            mNewParam.RefId = "";
+                            mNewParam.Source = "";
                             mNewParam.CldFileId = mUploadedFile.EntityIterationId;
-                            mNewParam.ExpectedVaultPath = mFolder.FullName;
+                            mNewParam.ExpectedVaultPath = mFolder.FullName + "/" + mUploadedFile.EntityName;
 
                             //combine the new parameter and the existing ones
                             fileAssocParams.Add(mNewParam);
@@ -250,9 +250,14 @@ namespace QuickstartiLogicLibrary
 
                             //check-in the file providing the updated associations;
                             System.IO.Stream stream = null;
-                            VDF.Vault.Currency.Entities.FileIteration mUpdatedParent = conn.FileManager.CheckinFile(mNewFileIteration, "iLogic-Vault Rule attached " + mUploadedFile.EntityName, false, DateTime.Now, mFileAssocParamArray,
-                               null, true, mNewFileIteration.EntityName, mNewFileIteration.FileClassification, false, stream);
-                            if (mUpdatedParent.EntityIterationId == -1)
+                            VDF.Vault.Currency.Entities.FileIteration mUpdatedParent;
+                            try
+                            {
+                                //mUpdatedParent = conn.FileManager.CheckinFile(mNewFileIteration, "iLogic-Vault Rule attached " + mUploadedFile.EntityName, false, DateTime.Now, mFileAssocParamArray,
+                                //                               null, true, mNewFileIteration.EntityName, mNewFileIteration.FileClassification, false, stream);
+                                mUpdatedParent = conn.FileManager.CheckinFile(mNewFileIteration, "iLogic Rule modified Attachments", false, mFileAssocParamArray, null, true, mNewFileIteration.EntityName, mNewFileIteration.FileClassification, false);
+                            }
+                            catch (Exception)
                             {
                                 mUpdatedParent = conn.FileManager.UndoCheckoutFile(mNewFileIteration, stream);
                                 return false;
@@ -448,6 +453,12 @@ namespace QuickstartiLogicLibrary
         public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties,
             ref Dictionary<string, string> VaultItemProperties, bool CheckOut = false)
         {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetFileByFullFilePath overload including Item properties is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
             List<string> mFiles = new List<string>();
             List<String> mFilesDownloaded = new List<string>();
             mFiles.Add(VaultFullFileName);
@@ -1465,6 +1476,12 @@ namespace QuickstartiLogicLibrary
         /// <returns>new number</returns>
         public string GetNewNumber(string mSchmName, string[] mSchmPrms = null)
         {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetNewNumber is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
             ACW.NumSchm NmngSchm = null;
             try
             {
