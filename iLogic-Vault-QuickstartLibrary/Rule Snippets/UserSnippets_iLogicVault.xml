@@ -145,8 +145,7 @@ End If]]>
       <ToolTip>check out active document.Note - requires active Vault connection (Snippet iLogic Vault Connection). Calls UI command and may require user interaction, if dialog suppression is activated for 'Check out' command.</ToolTip>
       <Index>2006</Index>
       <Code>
-        <![CDATA[ThisDoc.Save
-Dim oControlDef As Inventor.ControlDefinition = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckoutTop")
+        <![CDATA[Dim oControlDef As Inventor.ControlDefinition = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckoutTop")
 oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending before rule exits]]>
       </Code>
     </CodeSnippet>

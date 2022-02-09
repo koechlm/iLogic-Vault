@@ -515,35 +515,38 @@ namespace QuickstartiLogicLibrary
 
 
         /// <summary>
-        /// Get the local file's status in Vault. Validate the ErrorState = "None" to get all return values.
+        /// Get the local file's status in Vault.
+        /// Validate the ErrorState = "None" to get all return values for vaulted files.
+        /// Validate the ErrorState = (LocalFileNotFoundVaultFileNotFound|VaultFileNotFound) to validate files before first time check-in
         /// </summary>
         /// <param name="LocalFullFileName">Local path and file name, e.g., ThisDoc.FullFileName</param>
-        /// <returns>ErrorState only if file does not exist, otherwise CheckOutState, ConsumableState, ErrorState, LocalEditsState, LockState, RevisionState, VersionState</returns>
+        /// <returns>ErrorState only if file is not added to Vault yet; otherwise Vault's default file status enumerations of CheckOutState, ConsumableState, ErrorState, LocalEditsState, LockState, RevisionState, VersionState</returns>
         public Dictionary<string, string> GetVaultFileStatus(string LocalFullFileName)
         {
             Dictionary<string, string> keyValues = new Dictionary<string, string>();
 
-            //convert the local path to the corresponding Vault path
-            string FileName = null;
+            //convert the local path to the corresponding Vault path; note - the file might be a virtual (to be created in future) one
             System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalFullFileName);
-            if (fileInfo.Exists)
-            {
-                FileName = fileInfo.Name;
-            }
-            else
-            {
-                keyValues.Add("ErrorState", "Local file not found");
-                return keyValues;
-            }
-            string VaultFilePath = ConvertLocalPathToVaultPath(LocalFullFileName) + "/" + FileName;
+            string mVltFullFileName = null;
+            string mWf = conn.WorkingFoldersManager.GetWorkingFolder("$/").FullPath;
+            if (LocalFullFileName.Contains(mWf))
+                mVltFullFileName = LocalFullFileName.Replace(mWf, "$/");
+            mVltFullFileName = mVltFullFileName.Replace("\\", "/");
 
-            //get the file object consuming the Vault Path; if the file does not exist return the file-non-exist status information
+            //get the file object consuming the Vault Path; if the file does not exist return the VaultFileNotFound status information; it is a custom ErrorState info
             Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
-            ACW.File mFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { VaultFilePath }).FirstOrDefault();
+            ACW.File mFile = mWsMgr.DocumentService.FindLatestFilesByPaths(new string[] { mVltFullFileName }).FirstOrDefault();
 
-            if (mFile.Id == -1)// file not found
+            if (mFile.Id == -1) // file not found locally and in Vault
             {
-                keyValues.Add("ErrorState", "File does not exist in Vault.");
+                if (!fileInfo.Exists)
+                {
+                    keyValues.Add("ErrorState", "LocalFileNotFoundVaultFileNotFound");
+                }
+                else
+                {
+                    keyValues.Add("ErrorState", "VaultFileNotFound");
+                }
                 return keyValues;
             }
 
@@ -554,7 +557,6 @@ namespace QuickstartiLogicLibrary
             PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
 
             EntityStatusImageInfo status = conn.PropertyManager.GetPropertyValue(mFileIteration, mVaultStatus, null) as EntityStatusImageInfo;
-
             keyValues.Add("CheckOutState", status.Status.CheckoutState.ToString());
             keyValues.Add("ConsumableState", status.Status.ConsumableState.ToString());
             keyValues.Add("ErrorState", status.Status.ErrorState.ToString());
