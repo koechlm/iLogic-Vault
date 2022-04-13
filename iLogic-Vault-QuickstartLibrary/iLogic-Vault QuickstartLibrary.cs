@@ -529,7 +529,7 @@ namespace QuickstartiLogicLibrary
             System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalFullFileName);
             string mVltFullFileName = null;
             string mWf = conn.WorkingFoldersManager.GetWorkingFolder("$/").FullPath;
-            if (LocalFullFileName.Contains(mWf))
+            if (LocalFullFileName.ToLower().Contains(mWf.ToLower()))
                 mVltFullFileName = LocalFullFileName.Replace(mWf, "$/");
             mVltFullFileName = mVltFullFileName.Replace("\\", "/");
 
