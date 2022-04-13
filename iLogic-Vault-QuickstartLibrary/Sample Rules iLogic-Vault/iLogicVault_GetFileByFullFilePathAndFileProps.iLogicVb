@@ -17,7 +17,7 @@ Sub Main
 	Dim mVaultFileProps As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
 	Dim mVaultFile As String = iLogicVault.GetFileByFullFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt", mVaultFileProps) 'Optionally add ..., True) to activate check out for the file downloaded.
 	If mVaultFile Is Nothing Then
-		Logger.Error("Vault file not found. Please double check that file exists in Vault.")
+		Logger.Error("Vault file not found. Please double check that file path is correct or that the file exists in Vault.")
 	Else
 		Logger.Info("File " & mVaultFile & " downloaded.")
 		For Each item In mVaultFileProps

@@ -17,7 +17,7 @@ Sub Main
 	'returns full file name in local working folder (download enforces override, if local file exists)
 	Dim mVaultFile As String = iLogicVault.GetFileByFullFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt") 'Optionally add ..., True) to activate check out for the file downloaded.
 	If mVaultFile Is Nothing Then
-		Logger.Error("Vault file not found. Please double check that file exists in Vault.")
+		Logger.Error("Vault file not found. Please double check that file path is correct or that the file exists in Vault.")
 	Else
 		Logger.Info("File " & mVaultFile & " downloaded.")
 			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)

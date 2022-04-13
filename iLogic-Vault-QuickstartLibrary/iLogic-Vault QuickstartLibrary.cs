@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using System.Reflection;
 
 using ACET = Autodesk.Connectivity.Explorer.ExtensibilityTools;
 using ACW = Autodesk.Connectivity.WebServices;
@@ -345,35 +344,49 @@ namespace QuickstartiLogicLibrary
             ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
-            //define download options, including DefaultAcquisitionOptions
-            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-
-            //download
-            VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
-
-            if (CheckOut)
+            if (mFileIt.EntityMasterId != -1)
             {
-                //define checkout options and checkout
-                settings = CreateAcquireSettings(true);
+                //define download options, including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                results = conn.FileManager.AcquireFiles(settings);
-            }
 
-            //refine and validate output
-            if (results != null)
-            {
-                try
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
                 {
                     if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
                     {
                         mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
                     }
-
-                    return mFilesDownloaded[0];
-
                 }
-                catch (Exception)
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
+                if (CheckOut)
+                {
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //return the file
+                if (mFilesDownloaded.Count > 0)
+                {
+                    return mFilesDownloaded[0];
+                }
+                else
                 {
                     return null;
                 }
@@ -399,42 +412,57 @@ namespace QuickstartiLogicLibrary
             ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
-            //define download options, including DefaultAcquisitionOptions
-            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-
-            //download
-            VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
-
-            if (CheckOut)
+            if (mFileIt.EntityMasterId != -1)
             {
-                //define checkout options and checkout
-                settings = CreateAcquireSettings(true);
+                //define download options, including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                results = conn.FileManager.AcquireFiles(settings);
-            }
 
-            //refine and validate output
-            if (results != null)
-            {
-                try
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
                 {
                     if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
                     {
                         mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
                     }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
 
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
+                if (CheckOut)
+                {
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
+                {
                     //collect file properties
                     mGetFileProps(mFileIt, ref VaultFileProperties);
 
                     return mFilesDownloaded[0];
-
                 }
-                catch (Exception)
+                else
                 {
                     return null;
                 }
             }
+
             return null;
         }
 
@@ -465,51 +493,66 @@ namespace QuickstartiLogicLibrary
             ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
             VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
-            //define download options, including DefaultAcquisitionOptions
-            VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-            settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-
-            //download
-            VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
-
-            if (CheckOut)
+            if (mFileIt.EntityMasterId != -1)
             {
-                //define checkout options and checkout
-                settings = CreateAcquireSettings(true);
+                //define download options, including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
                 settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                results = conn.FileManager.AcquireFiles(settings);
-            }
 
-            //refine and validate output
-            if (results != null)
-            {
-                try
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
                 {
                     if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
                     {
                         mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
                     }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
 
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
+                if (CheckOut)
+                {
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
+                {
                     //collect file properties
                     mGetFileProps(mFileIt, ref VaultFileProperties);
 
                     //collect item properties if file linked to item
-
                     ACW.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
                     if (items.Length > 0)
                     {
-                        //todo: handle 1:n file item links
+                        //todo: handle 1:n file item links (may happen with model states)
                         ACW.Item item = items[0];
                         mGetItemProps(item, ref VaultItemProperties);
                     }
-                    return mFilesDownloaded[0];
 
+                    return mFilesDownloaded[0];
                 }
-                catch (Exception)
+                else
                 {
                     return null;
                 }
             }
+
             return null;
         }
 
@@ -788,32 +831,39 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
 
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
                 if (CheckOut)
                 {
-                    //define checkout options and checkout
                     settings = CreateAcquireSettings(true);
                     settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine and validate output
-                if (results != null)
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
                 {
-                    try
-                    {
-                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                        {
-                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                        }
-
-                        return mFilesDownloaded[0];
-
-                    }
-                    catch (Exception)
-                    {
-                        return null;
-                    }
+                    return mFilesDownloaded[0];
                 }
                 else
                 {
@@ -867,6 +917,7 @@ namespace QuickstartiLogicLibrary
                 if (mSrchResults != null) totalResults.AddRange(mSrchResults);
                 else break;
             }
+
             //if results not empty
             if (totalResults.Count >= 1)
             {
@@ -879,35 +930,42 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
 
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
                 if (CheckOut)
                 {
-                    //define checkout options and checkout
                     settings = CreateAcquireSettings(true);
                     settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine and validate output
-                if (results != null)
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
                 {
-                    try
-                    {
-                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                        {
-                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                        }
+                    //get file properties
+                    mGetFileProps(mFileIt, ref VaultFileProperties);
 
-                        //get file properties
-                        mGetFileProps(mFileIt, ref VaultFileProperties);
-
-                        return mFilesDownloaded[0];
-
-                    }
-                    catch (Exception)
-                    {
-                        return null;
-                    }
+                    return mFilesDownloaded[0];
                 }
                 else
                 {
@@ -918,6 +976,7 @@ namespace QuickstartiLogicLibrary
             {
                 return null;
             }
+
         }
 
         /// <summary>
@@ -963,6 +1022,7 @@ namespace QuickstartiLogicLibrary
                 if (mSrchResults != null) totalResults.AddRange(mSrchResults);
                 else break;
             }
+
             //if results not empty
             if (totalResults.Count >= 1)
             {
@@ -975,44 +1035,51 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
 
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
                 if (CheckOut)
                 {
-                    //define checkout options and checkout
                     settings = CreateAcquireSettings(true);
                     settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine and validate output
-                if (results != null)
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
                 {
-                    try
+                    //get file properties
+                    mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                    //collect item properties if file linked to item
+                    ACW.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
+                    if (items.Length > 0)
                     {
-                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                        {
-                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                        }
-
-                        //get file properties
-                        mGetFileProps(mFileIt, ref VaultFileProperties);
-
-                        //get item properties
-                        ACW.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
-                        if (items.Length > 0)
-                        {
-                            //todo: handle 1:n file item links
-                            ACW.Item item = items[0];
-                            mGetItemProps(item, ref VaultItemProperties);
-                        }
-
-                        return mFilesDownloaded[0];
-
+                        //todo: handle 1:n file item links (may happen with model states)
+                        ACW.Item item = items[0];
+                        mGetItemProps(item, ref VaultItemProperties);
                     }
-                    catch (Exception)
-                    {
-                        return null;
-                    }
+
+                    return mFilesDownloaded[0];
                 }
                 else
                 {
@@ -1023,6 +1090,7 @@ namespace QuickstartiLogicLibrary
             {
                 return null;
             }
+
         }
 
 
@@ -1065,6 +1133,7 @@ namespace QuickstartiLogicLibrary
                 if (mSrchResults != null) totalResults.AddRange(mSrchResults);
                 else break;
             }
+
             //if results not empty
             if (totalResults.Count >= 1)
             {
@@ -1080,6 +1149,32 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                if (results.FileResults != null)
+                {
+                    foreach (VDF.Vault.Currency.Entities.FileIteration mFileIt in mFilesFound)
+                    {
+                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    foreach (VDF.Vault.Currency.Entities.FileIteration mFileIt in mFilesFound)
+                    {
+                        PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+                        PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                        EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                        if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                        {
+                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                        }
+                    }
+                }
 
                 if (CheckOut)
                 {
@@ -1095,17 +1190,9 @@ namespace QuickstartiLogicLibrary
                     results = conn.FileManager.AcquireFiles(settings);
                 }
 
-                //refine and validate output
-                if (results.FileResults != null)
+                //return the files
+                if (mFilesDownloaded.Count > 0)
                 {
-                    foreach (VDF.Vault.Currency.Entities.FileIteration mFileIt in mFilesFound)
-                    {
-                        if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                        {
-                            mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                        }
-                    }
-
                     return mFilesDownloaded;
                 }
 
