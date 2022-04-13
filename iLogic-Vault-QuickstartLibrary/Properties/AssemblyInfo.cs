@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("QuickstartiLogicLibrary")]
 [assembly: AssemblyDescription("Technical Sales EMEA Quickstart Libraries - Vault Functions for iLogic Rules")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Autodesk GmbH")]
+[assembly: AssemblyCompany("Autodesk")]
 [assembly: AssemblyProduct("QuickstartiLogicLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2021 Autodesk, Markus Koechl")]
+[assembly: AssemblyCopyright("Copyright ©  2022 Autodesk, Markus Koechl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2022.2.2.0")]
-[assembly: AssemblyFileVersion("2022.2.2.0")]
+[assembly: AssemblyVersion("2023.0.0.0")]
+[assembly: AssemblyFileVersion("2023.0.0.0")]
