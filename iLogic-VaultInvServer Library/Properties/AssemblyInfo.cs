@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("iLogic-VaultInventorServer Library")]
-[assembly: AssemblyDescription("TS EMEA Quickstart Libraries - Vault Functions for Inventor Server iLogic Rules")]
+[assembly: AssemblyDescription("Technical Sales EMEA Quickstart Libraries - Vault Functions for Inventor Server iLogic Rules")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Autodesk GmbH")]
+[assembly: AssemblyCompany("Autodesk")]
 [assembly: AssemblyProduct("iLogic-VaultInvServer Library")]
-[assembly: AssemblyCopyright("Copyright © 2020 Autodesk, Markus Koechl")]
+[assembly: AssemblyCopyright("Copyright © 2022 Autodesk, Markus Koechl")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2022.0.0.6")]
-[assembly: AssemblyFileVersion("2022.0.0.6")]
+[assembly: AssemblyVersion("2022.3.0.1")]
+[assembly: AssemblyFileVersion("2022.3.0.1")]

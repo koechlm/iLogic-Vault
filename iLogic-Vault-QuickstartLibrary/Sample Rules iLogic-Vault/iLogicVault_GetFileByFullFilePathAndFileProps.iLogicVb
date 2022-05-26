@@ -19,10 +19,11 @@ Sub Main
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file not found. Please double check that file path is correct or that the file exists in Vault.")
 	Else
-		Logger.Info("File " & mVaultFile & " downloaded.")
+		Logger.Info("File " & mVaultFile & " (including dependent and attachment files) downloaded.")
 		For Each item In mVaultFileProps
 			Logger.Info("Vault File Property Name/Value: " + item.Key + " = " + item.Value)
 		Next
+		Logger.Info("File " & mVaultFile & " download finished.")
 		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If
 

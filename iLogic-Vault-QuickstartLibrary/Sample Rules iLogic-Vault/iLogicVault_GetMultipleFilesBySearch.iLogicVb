@@ -33,7 +33,7 @@ Sub Main
 		For Each mFile As String In mVaultFiles
 			mFileList += vbCr & mFile 
 		Next
-		Logger.Info("iLogic-Vault file search found: " & mFileList)
+		Logger.Info("iLogic-Vault file search found and downloaded (note: dependent and attachment files are included in the download, but not listed): " & mFileList)
 		'so the files are there, do what ever you need to do consuming these...
 	End If
 

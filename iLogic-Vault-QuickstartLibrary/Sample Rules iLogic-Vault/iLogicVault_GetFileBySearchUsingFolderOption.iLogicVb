@@ -29,7 +29,7 @@ Sub Main
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
 	Else
-		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace.")
+		Logger.Info("File " & mVaultFile & " found by search and downloaded to local workspace (including dependent and attachment files).")
 		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If
 	

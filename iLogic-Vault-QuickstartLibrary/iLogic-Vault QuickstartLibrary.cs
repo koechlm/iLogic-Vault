@@ -272,288 +272,116 @@ namespace QuickstartiLogicLibrary
             }
         }
 
-        private bool IsCadFile(System.IO.FileInfo FileInfo)
-        {
-            //don't add Inventor files except single part files
-            List<string> mFileExtensions = new List<string> { ".ipt", ".iam", "ipn", ".idw", ".dwg", ".rvt", ".nwd", ".nwc", ".sldprt", ".sldasm", ".slddrw", ".dgn", ".prt", ".asm", ".drw" };
-            if (mFileExtensions.Any(n => FileInfo.Extension == n))
-            {
-                return true;
-            }
-            return false;
-        }
 
         /// <summary>
-        /// Convert the local file or folder path to the corresponding path in Vault.
+        /// Search multiple file(s) by 1 to many search criteria as property/value pairs. 
+        /// Returns array of file names found, matching the criteria.
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
         /// </summary>
-        /// <param name="LocalPath">File or Folder path in local working folder</param>
-        /// <returns>Vault Folder Path; if LocalPath is a file path, the file's parent Folder Path returns</returns>
-        public string ConvertLocalPathToVaultPath(string LocalPath)
+        /// <param name="SearchCriteria"></param>
+        /// <param name="MatchAllCriteria"></param>
+        /// <param name="FoldersSearched"></param>
+        /// <returns></returns>
+        public IList<string> CheckFilesExistBySearchCriteria(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = true, string[] FoldersSearched = null)
         {
-            string mVaultPath = null;
-            string mWf = conn.WorkingFoldersManager.GetWorkingFolder("$/").FullPath;
-            if (LocalPath.Contains(mWf))
+            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
+            ACW.Folder[] mFldr;
+            List<long> mFolders = new List<long>();
+            if (FoldersSearched != null)
             {
-                if (IsFilePath(LocalPath) == true)
+                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
+                foreach (ACW.Folder folder in mFldr)
                 {
-                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalPath);
-                    LocalPath = fileInfo.DirectoryName;
+                    if (folder.Id != -1) mFolders.Add(folder.Id);
                 }
-                if (IsDirPath(LocalPath) == true)
+            }
+
+            List<String> mFilesFound = new List<string>();
+            //combine all search criteria
+            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<ACW.File> totalResults = new List<ACW.File>();
+            string bookmark = string.Empty;
+            ACW.SrchStatus status = null;
+
+            while (status == null || totalResults.Count < status.TotalHits)
+            {
+                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
+                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
+                else break;
+            }
+            //if results not empty
+            if (totalResults.Count >= 1)
+            {
+                foreach (ACW.File wsFile in totalResults)
                 {
-                    mVaultPath = LocalPath.Replace(mWf, "$/");
-                    mVaultPath = mVaultPath.Replace("\\", "/");
-                    return mVaultPath;
+                    mFilesFound.Add(wsFile.Name);
                 }
-                else
-                {
-                    return "Invalid local path";
-                }
+                return mFilesFound;
             }
             else
             {
-                return "Error: Local path outside of working folder";
-            }
-        }
-
-        private bool IsFilePath(string path)
-        {
-            if (System.IO.File.Exists(path)) return true;
-            return false;
-        }
-
-        private bool IsDirPath(string path)
-        {
-            if (System.IO.Directory.Exists(path)) return true;
-            return false;
-        }
-
-        /// <summary>
-        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder (download enforces override, if local file exists),
-        /// returns "FileNotFound if file does not exist at indicated location.
-        /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
-        /// </summary>
-        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
-        /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default.</param>
-        /// <returns>Local path/filename</returns>
-        public string GetFileByFullFilePath(string VaultFullFileName, bool CheckOut = false)
-        {
-            List<string> mFiles = new List<string>();
-            List<String> mFilesDownloaded = new List<string>();
-            mFiles.Add(VaultFullFileName);
-            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
-            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
-
-            if (mFileIt.EntityMasterId != -1)
-            {
-                //define download options, including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-
-                //download
-                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
-                if (results.FileResults != null)
-                {
-                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                    {
-                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                    }
-                }
-                //the download cancelled if the file already exists in the working folder
-                if (results.IsCancelled == true)
-                {
-                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
-
-                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
-
-                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
-                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
-                    {
-                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                    }
-                }
-
-                //define checkout options and checkout
-                if (CheckOut)
-                {
-                    settings = CreateAcquireSettings(true);
-                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                    results = conn.FileManager.AcquireFiles(settings);
-                }
-
-                //return the file
-                if (mFilesDownloaded.Count > 0)
-                {
-                    return mFilesDownloaded[0];
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder(download enforces override, if local file exists),
-        /// returns nothing if the file does not exist at indicated location.
-        /// File Properties return all values converted to text. Access the value using the Vault property display name as key.
-        /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
-        /// </summary>
-        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
-        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
-        /// <param name="CheckOut">Default value is 'False'; set to 'True' to check-out the downloaded file</param>
-        /// <returns>Local path/filename</returns>
-        public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties, bool CheckOut = false)
-        {
-            List<string> mFiles = new List<string>();
-            List<String> mFilesDownloaded = new List<string>();
-            mFiles.Add(VaultFullFileName);
-            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
-            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
-
-            if (mFileIt.EntityMasterId != -1)
-            {
-                //define download options, including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-
-                //download
-                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
-                if (results.FileResults != null)
-                {
-                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                    {
-                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                    }
-                }
-                //the download cancelled if the file already exists in the working folder
-                if (results.IsCancelled == true)
-                {
-                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
-
-                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
-
-                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
-                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
-                    {
-                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                    }
-                }
-
-                //define checkout options and checkout
-                if (CheckOut)
-                {
-                    settings = CreateAcquireSettings(true);
-                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                    results = conn.FileManager.AcquireFiles(settings);
-                }
-
-                //return the file and optional output
-                if (mFilesDownloaded.Count > 0)
-                {
-                    //collect file properties
-                    mGetFileProps(mFileIt, ref VaultFileProperties);
-
-                    return mFilesDownloaded[0];
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            return null;
-        }
-
-
-        /// <summary>
-        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder(download enforces override, if local file exists),
-        /// returns nothing if the file does not exist at indicated location.
-        /// File and Item property dictionaries return all values converted to text. Access the value using the Vault property display name as key.
-        /// Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
-        /// </summary>
-        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
-        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
-        /// <param name="VaultItemProperties">pairs of Vault Item property display name and property value</param>
-        /// <param name="CheckOut"></param>
-        /// <returns>Local path/filename</returns>
-        public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties,
-            ref Dictionary<string, string> VaultItemProperties, bool CheckOut = false)
-        {
-            if (IsVaultBasic)
-            {
-                MessageBox.Show("The iLogic-Vault method GetFileByFullFilePath overload including Item properties is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
+        }
 
-            List<string> mFiles = new List<string>();
-            List<String> mFilesDownloaded = new List<string>();
-            mFiles.Add(VaultFullFileName);
-            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
-            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
 
-            if (mFileIt.EntityMasterId != -1)
+        /// <summary>
+        /// Search multiple file(s) by 1 to many search criteria as property/value pairs. 
+        /// Returns array of file names found, matching the criteria.
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+        /// </summary>
+        /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
+        /// <param name="AllFilesVaultFileProperties">Dictonary of files' property dictionaries</param>
+        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
+        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
+        /// <returns>Array of file names found</returns>
+        public IList<string> CheckFilesExistBySearchCriteria(Dictionary<string, string> SearchCriteria, ref Dictionary<string, Dictionary<string, string>> AllFilesVaultFileProperties,
+            bool MatchAllCriteria = true, string[] FoldersSearched = null)
+        {
+            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
+            ACW.Folder[] mFldr;
+            List<long> mFolders = new List<long>();
+            if (FoldersSearched != null)
             {
-                //define download options, including DefaultAcquisitionOptions
-                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
-                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-
-                //download
-                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
-                if (results.FileResults != null)
+                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
+                foreach (ACW.Folder folder in mFldr)
                 {
-                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
-                    {
-                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                    }
-                }
-                //the download cancelled if the file already exists in the working folder
-                if (results.IsCancelled == true)
-                {
-                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
-
-                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
-
-                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
-                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
-                    {
-                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
-                    }
-                }
-
-                //define checkout options and checkout
-                if (CheckOut)
-                {
-                    settings = CreateAcquireSettings(true);
-                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
-                    results = conn.FileManager.AcquireFiles(settings);
-                }
-
-                //return the file and optional output
-                if (mFilesDownloaded.Count > 0)
-                {
-                    //collect file properties
-                    mGetFileProps(mFileIt, ref VaultFileProperties);
-
-                    //collect item properties if file linked to item
-                    ACW.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
-                    if (items.Length > 0)
-                    {
-                        //todo: handle 1:n file item links (may happen with model states)
-                        ACW.Item item = items[0];
-                        mGetItemProps(item, ref VaultItemProperties);
-                    }
-
-                    return mFilesDownloaded[0];
-                }
-                else
-                {
-                    return null;
+                    if (folder.Id != -1) mFolders.Add(folder.Id);
                 }
             }
 
-            return null;
+            List<String> mFilesFound = new List<string>();
+            //combine all search criteria
+            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
+            List<ACW.File> totalResults = new List<ACW.File>();
+            string bookmark = string.Empty;
+            ACW.SrchStatus status = null;
+
+            while (status == null || totalResults.Count < status.TotalHits)
+            {
+                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
+                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
+                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
+                else break;
+            }
+            //if results not empty
+            if (totalResults.Count >= 1)
+            {
+                foreach (ACW.File wsFile in totalResults)
+                {
+                    mFilesFound.Add(wsFile.Name);
+                    Dictionary<string, string> mVaultFileProperties = new Dictionary<string, string>();
+                    VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
+                    mGetFileProps(mFileIt, ref mVaultFileProperties);
+                    AllFilesVaultFileProperties.Add(mFileIt.EntityName, (mVaultFileProperties));
+                }
+                return mFilesFound;
+            }
+            else
+            {
+                return null;
+            }
         }
 
 
@@ -610,6 +438,272 @@ namespace QuickstartiLogicLibrary
 
             return keyValues;
         }
+
+
+        /// <summary>
+        /// Convert the local file or folder path to the corresponding path in Vault.
+        /// </summary>
+        /// <param name="LocalPath">File or Folder path in local working folder</param>
+        /// <returns>Vault Folder Path; if LocalPath is a file path, the file's parent Folder Path returns</returns>
+        public string ConvertLocalPathToVaultPath(string LocalPath)
+        {
+            string mVaultPath = null;
+            string mWf = conn.WorkingFoldersManager.GetWorkingFolder("$/").FullPath;
+            if (LocalPath.Contains(mWf))
+            {
+                if (IsFilePath(LocalPath) == true)
+                {
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(LocalPath);
+                    LocalPath = fileInfo.DirectoryName;
+                }
+                if (IsDirPath(LocalPath) == true)
+                {
+                    mVaultPath = LocalPath.Replace(mWf, "$/");
+                    mVaultPath = mVaultPath.Replace("\\", "/");
+                    return mVaultPath;
+                }
+                else
+                {
+                    return "Invalid local path";
+                }
+            }
+            else
+            {
+                return "Error: Local path outside of working folder";
+            }
+        }
+
+
+        /// <summary>
+        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder,
+        /// download options include children and attachments; 
+        /// </summary>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="CheckOut">Optional. File downloaded does NOT check-out as default.</param>
+        /// <returns>Local path/filename</returns>
+        public string GetFileByFullFilePath(string VaultFullFileName, bool CheckOut = false)
+        {
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            if (mFileIt.EntityMasterId != -1)
+            {
+                //define download options, including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+                
+                //capture primary file name for return (download may include children and attachments)
+                if (results.FileResults != null)
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
+                if (CheckOut)
+                {
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //return the file
+                if (mFilesDownloaded.Count > 0)
+                {
+                    return mFilesDownloaded[0];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder,
+        /// download options include children and attachments; 
+        /// File Properties return all values converted to text. Access the value using the Vault property display name as key.
+        /// </summary>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="CheckOut">Default value is 'False'; set to 'True' to check-out the downloaded file</param>
+        /// <returns>Local path/filename</returns>
+        public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties, bool CheckOut = false)
+        {
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            if (mFileIt.EntityMasterId != -1)
+            {
+                //define download options, including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                //capture primary file name for return (download may include children and attachments)
+                if (results.FileResults != null)
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
+                if (CheckOut)
+                {
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
+                {
+                    //collect file properties
+                    mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                    return mFilesDownloaded[0];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Downloads Vault file using full file path, e.g. "$/Designs/Base.ipt". Returns full file name in local working folder,
+        /// download options include children and attachments; 
+        /// File and Item property dictionaries return all values converted to text. Access the value using the Vault property display name as key.
+        /// </summary>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
+        /// <param name="VaultItemProperties">pairs of Vault Item property display name and property value</param>
+        /// <param name="CheckOut"></param>
+        /// <returns>Local path/filename</returns>
+        public string GetFileByFullFilePath(string VaultFullFileName, ref Dictionary<string, string> VaultFileProperties,
+            ref Dictionary<string, string> VaultItemProperties, bool CheckOut = false)
+        {
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method GetFileByFullFilePath overload including Item properties is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            if (mFileIt.EntityMasterId != -1)
+            {
+                //define download options, including DefaultAcquisitionOptions
+                VDF.Vault.Settings.AcquireFilesSettings settings = CreateAcquireSettings(false);
+                settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+
+                //download
+                VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                //capture primary file name for return (download may include children and attachments)
+                if (results.FileResults != null)
+                {
+                    if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+                //the download cancelled if the file already exists in the working folder
+                if (results.IsCancelled == true)
+                {
+                    PropertyDefinitionDictionary mProps = conn.PropertyManager.GetPropertyDefinitions(VDF.Vault.Currency.Entities.EntityClassIds.Files, null, PropertyDefinitionFilter.IncludeAll);
+
+                    PropertyDefinition mVaultStatus = mProps[PropertyDefinitionIds.Client.VaultStatus];
+
+                    EntityStatusImageInfo mStatus = conn.PropertyManager.GetPropertyValue(mFileIt, mVaultStatus, null) as EntityStatusImageInfo;
+                    if (mStatus.Status.ConsumableState == EntityStatus.ConsumableStateEnum.LatestConsumable)
+                    {
+                        mFilesDownloaded.Add(conn.WorkingFoldersManager.GetPathOfFileInWorkingFolder(mFileIt).FullPath.ToString());
+                    }
+                }
+
+                //define checkout options and checkout
+                if (CheckOut)
+                {
+                    settings = CreateAcquireSettings(true);
+                    settings.AddFileToAcquire(mFileIt, settings.DefaultAcquisitionOption);
+                    results = conn.FileManager.AcquireFiles(settings);
+                }
+
+                //return the file and optional output
+                if (mFilesDownloaded.Count > 0)
+                {
+                    //collect file properties
+                    mGetFileProps(mFileIt, ref VaultFileProperties);
+
+                    //collect item properties if file linked to item
+                    ACW.Item[] items = conn.WebServiceManager.ItemService.GetItemsByFileId(mFileIt.EntityIterationId);
+                    if (items.Length > 0)
+                    {
+                        //todo: handle 1:n file item links (may happen with model states)
+                        ACW.Item item = items[0];
+                        mGetItemProps(item, ref VaultItemProperties);
+                    }
+
+                    return mFilesDownloaded[0];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
 
         /// <summary>
         /// Copy Vault file on file server and download using full file path, e.g. "$/Designs/Base.ipt".
@@ -780,10 +874,10 @@ namespace QuickstartiLogicLibrary
 
 
         /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
-        /// Downloads first file matching all or any search criterias. 
-        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
-        /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Search for a file by 1 to many search criteria as property/value pairs. 
+        /// Downloads the first file found, if the search result lists more than a single file. Dependents and attachments are included. Overwrites existing files.
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+        /// Returns the file name downloaded (does not return names of downloaded children and attachments). 
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
@@ -831,6 +925,8 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                //capture primary file name for return (download may include children and attachments)
                 if (results.FileResults != null)
                 {
                     if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
@@ -877,10 +973,11 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
-        /// Downloads first file matching all or any search criterias. 
-        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
-        /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Search for a file by 1 to many search criteria as property/value pairs. 
+        /// Downloads the first file found, if the search result lists more than a single file. Dependents and attachments are included. Overwrites existing files.
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+        /// Returns the file name downloaded (does not return names of downloaded children and attachments).
+        /// File property dictionaries return all values converted to text. Access the value using the Vault property display name as key.
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
         /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
@@ -930,6 +1027,8 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                //capture primary file name for return (download may include children and attachments)
                 if (results.FileResults != null)
                 {
                     if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
@@ -980,10 +1079,11 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
-        /// Downloads first file matching all or any search criterias. 
-        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
-        /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
+        /// Search for a file by 1 to many search criteria as property/value pairs. 
+        /// Downloads the first file found, if the search result lists more than a single file. Dependents and attachments are included. Overwrites existing files.
+        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+        /// Returns the file name downloaded (does not return names of downloaded children and attachments).
+        /// File and Item property dictionaries return all values converted to text. Access the value using the Vault property display name as key.
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
         /// <param name="VaultFileProperties">pairs of Vault File property display name and property value</param>
@@ -1035,6 +1135,8 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                //capture primary file name for return (download may include children and attachments)
                 if (results.FileResults != null)
                 {
                     if (results.FileResults.Any(n => n.File.EntityName == mFileIt.EntityName))
@@ -1093,11 +1195,11 @@ namespace QuickstartiLogicLibrary
 
         }
 
-
         /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
-        /// Downloads all files found, matching the criteria. Returns array of full file names of downloaded files
+        /// Search for multiple files by 1 to many search criteria as property/value pairs. 
+        /// Downloads all files found, matching the criteria. Dependents and attachments are included. Overwrites existing files.
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
+        /// Returns list of files names downloaded (does not return names of downloaded children and attachments).
         /// </summary>
         /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
         /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
@@ -1149,6 +1251,8 @@ namespace QuickstartiLogicLibrary
 
                 //download
                 VDF.Vault.Results.AcquireFilesResults results = conn.FileManager.AcquireFiles(settings);
+
+                //capture primary file names for return (we don't return names of downloaded children and attachment files)
                 if (results.FileResults != null)
                 {
                     foreach (VDF.Vault.Currency.Entities.FileIteration mFileIt in mFilesFound)
@@ -1207,7 +1311,7 @@ namespace QuickstartiLogicLibrary
 
 
         /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+        /// Search multiple file(s) by 1 to many search criteria as property/value pairs. 
         /// Downloads first file matching all or any search criterias.
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
         /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
@@ -1327,9 +1431,8 @@ namespace QuickstartiLogicLibrary
             }
         }
 
-
         /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
+        /// Search multiple file(s) by 1 to many search criteria as property/value pairs. 
         /// Downloads first file matching all or any search criterias.
         /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND condition.
         /// Preset Download Options: Download Children (recursively) = Enabled, Enforce Overwrite = True
@@ -1443,120 +1546,6 @@ namespace QuickstartiLogicLibrary
             }
         }
 
-
-        /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
-        /// Returns array of file names found, matching the criteria.
-        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
-        /// </summary>
-        /// <param name="SearchCriteria"></param>
-        /// <param name="MatchAllCriteria"></param>
-        /// <param name="FoldersSearched"></param>
-        /// <returns></returns>
-        public IList<string> CheckFilesExistBySearchCriteria(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria = true, string[] FoldersSearched = null)
-        {
-            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
-            ACW.Folder[] mFldr;
-            List<long> mFolders = new List<long>();
-            if (FoldersSearched != null)
-            {
-                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
-                foreach (ACW.Folder folder in mFldr)
-                {
-                    if (folder.Id != -1) mFolders.Add(folder.Id);
-                }
-            }
-
-            List<String> mFilesFound = new List<string>();
-            //combine all search criteria
-            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
-            List<ACW.File> totalResults = new List<ACW.File>();
-            string bookmark = string.Empty;
-            ACW.SrchStatus status = null;
-
-            while (status == null || totalResults.Count < status.TotalHits)
-            {
-                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
-                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
-                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
-                else break;
-            }
-            //if results not empty
-            if (totalResults.Count >= 1)
-            {
-                foreach (ACW.File wsFile in totalResults)
-                {
-                    mFilesFound.Add(wsFile.Name);
-                }
-                return mFilesFound;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-
-        /// <summary>
-        /// Find 1 to many file(s) by 1 to many search criteria as property/value pairs. 
-        /// Returns array of file names found, matching the criteria.
-        /// Preset Search Operator Options: [Property] is (exactly) [Value]; multiple conditions link up using AND/OR condition, depending MatchAllCriteria = True/False
-        /// </summary>
-        /// <param name="SearchCriteria">Dictionary of property/value pairs</param>
-        /// <param name="AllFilesVaultFileProperties">Dictonary of files' property dictionaries</param>
-        /// <param name="MatchAllCriteria">Optional. Switches AND/OR conditions using multiple criterias. Default is true</param>
-        /// <param name="FoldersSearched">Optional. Limit search scope to given folder path(s).</param>
-        /// <returns>Array of file names found</returns>
-        public IList<string> CheckFilesExistBySearchCriteria(Dictionary<string, string> SearchCriteria, ref Dictionary<string, Dictionary<string, string>> AllFilesVaultFileProperties,
-            bool MatchAllCriteria = true, string[] FoldersSearched = null)
-        {
-            //FoldersSearched: Inventor files are expected in IPJ registered path's only. In case of null use these:
-            ACW.Folder[] mFldr;
-            List<long> mFolders = new List<long>();
-            if (FoldersSearched != null)
-            {
-                mFldr = conn.WebServiceManager.DocumentService.FindFoldersByPaths(FoldersSearched);
-                foreach (ACW.Folder folder in mFldr)
-                {
-                    if (folder.Id != -1) mFolders.Add(folder.Id);
-                }
-            }
-
-            List<String> mFilesFound = new List<string>();
-            //combine all search criteria
-            List<ACW.SrchCond> mSrchConds = CreateSrchConds(SearchCriteria, MatchAllCriteria);
-            List<ACW.File> totalResults = new List<ACW.File>();
-            string bookmark = string.Empty;
-            ACW.SrchStatus status = null;
-
-            while (status == null || totalResults.Count < status.TotalHits)
-            {
-                ACW.File[] mSrchResults = conn.WebServiceManager.DocumentService.FindFilesBySearchConditions(
-                     mSrchConds.ToArray(), null, mFolders.ToArray(), true, true, ref bookmark, out status);
-                if (mSrchResults != null) totalResults.AddRange(mSrchResults);
-                else break;
-            }
-            //if results not empty
-            if (totalResults.Count >= 1)
-            {
-                foreach (ACW.File wsFile in totalResults)
-                {
-                    mFilesFound.Add(wsFile.Name);
-                    Dictionary<string, string> mVaultFileProperties = new Dictionary<string, string>();
-                    VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, wsFile);
-                    mGetFileProps(mFileIt, ref mVaultFileProperties);
-                    AllFilesVaultFileProperties.Add(mFileIt.EntityName, (mVaultFileProperties));
-                }
-                return mFilesFound;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-
-
         /// <summary>
         /// Create single file number by scheme name and optional input parameters
         /// </summary>
@@ -1656,7 +1645,6 @@ namespace QuickstartiLogicLibrary
                 return null;
             }
         }
-
 
         /// <summary>
         /// Download Thumbnail Image of the file searched as Image file.
@@ -1824,6 +1812,69 @@ namespace QuickstartiLogicLibrary
             return null;
         }
 
+
+        /// <summary>
+        /// Update multiple Vault file properties. Not available for Vault Basic.
+        /// </summary>
+        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
+        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value of respective type</param>
+        /// <param name="GetLatestFile">Option to download the updated file from Vault; default is true.</param>
+        /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
+        public bool UpdateVaultFileProperties(string VaultFullFileName, Dictionary<string, object> VaultFileProperties, bool GetLatestFile = true)
+        {
+            //this method is available for Vault Workgroup and Professional only.
+            if (IsVaultBasic)
+            {
+                MessageBox.Show("The iLogic-Vault method UpdateVaultFileProperties is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            //convert the given file path to the file object
+            List<string> mFiles = new List<string>();
+            List<String> mFilesDownloaded = new List<string>();
+            mFiles.Add(VaultFullFileName);
+            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
+            ACW.File mFile = wsFiles.FirstOrDefault();
+            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
+
+            Dictionary<ACW.PropDef, object> mPropDictionary = new Dictionary<ACW.PropDef, object>();
+            ACW.PropDef propDef = new ACW.PropDef();
+            ACW.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
+            foreach (var item in VaultFileProperties)
+            {
+                propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
+                if (propDef != null)
+                {
+                    //string and datetime types match
+                    if (item.Value.GetType().Name == propDef.Typ.ToString())
+                    {
+                        mPropDictionary.Add(propDef, item.Value);
+                    }
+                    //number formats are different
+                    if (item.Value.GetType().Name == "Decimal" && propDef.Typ.ToString()== "Numeric")
+                    {
+                        mPropDictionary.Add(propDef, item.Value.ToString());
+                    }
+                    if (item.Value.GetType().Name == "Boolean" && propDef.Typ.ToString() == "Bool")
+                    {
+                            mPropDictionary.Add(propDef, item.Value);
+                    }
+                }
+            }
+
+            bool success = mUpdateFileProperties(mFileIt, mPropDictionary);
+            if (success)
+            {
+                if (GetLatestFile == true)
+                {
+                    string latestFile = GetFileByFullFilePath(VaultFullFileName, false);
+                }
+                return true;
+            }
+            return false;
+
+        }
+
+
         private List<ACW.SrchCond> CreateSrchConds(Dictionary<string, string> SearchCriteria, bool MatchAllCriteria)
         {
             ACW.PropDef[] mFilePropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
@@ -1901,58 +1952,6 @@ namespace QuickstartiLogicLibrary
 
             return mFileIt;
         }
-
-        /// <summary>
-        /// Update multiple Vault file properties. Not available for Vault Basic.
-        /// </summary>
-        /// <param name="VaultFullFileName">The full path and file name in Vault virtual folder structure, e.g., '$/Designs/Part1.ipt'</param>
-        /// <param name="VaultFileProperties">pairs of Vault File property display name and property value of respective type</param>
-        /// <param name="GetLatestFile">Option to download the updated file from Vault; default is true.</param>
-        /// <returns>Returns true on success; returns false in case of failure, e.g., if the file is not available for check out</returns>
-        public bool UpdateVaultFileProperties(string VaultFullFileName, Dictionary<string, object> VaultFileProperties, bool GetLatestFile = true)
-        {
-            //this method is available for Vault Workgroup and Professional only.
-            if (IsVaultBasic)
-            {
-                MessageBox.Show("The iLogic-Vault method UpdateVaultFileProperties is not available for Vault Basic", "iLogic-Vault", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            //convert the given file path to the file object
-            List<string> mFiles = new List<string>();
-            List<String> mFilesDownloaded = new List<string>();
-            mFiles.Add(VaultFullFileName);
-            ACW.File[] wsFiles = conn.WebServiceManager.DocumentService.FindLatestFilesByPaths(mFiles.ToArray());
-            ACW.File mFile = wsFiles.FirstOrDefault();
-            VDF.Vault.Currency.Entities.FileIteration mFileIt = new VDF.Vault.Currency.Entities.FileIteration(conn, (wsFiles[0]));
-
-            Dictionary<ACW.PropDef, object> mPropDictionary = new Dictionary<ACW.PropDef, object>();
-            ACW.PropDef propDef = new ACW.PropDef();
-            ACW.PropDef[] propDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
-            foreach (var item in VaultFileProperties)
-            {
-                propDef = propDefs.SingleOrDefault(n => n.DispName == item.Key);
-                if (propDef != null)
-                {
-                    if (item.GetType() == propDef.GetType())
-                    {
-                        mPropDictionary.Add(propDef, item.Value);
-                    }
-                }
-            }
-
-            bool success = mUpdateFileProperties(mFileIt, mPropDictionary);
-            if (success)
-            {
-                if (GetLatestFile == true)
-                {
-                    string latestFile = GetFileByFullFilePath(VaultFullFileName, false);
-                }
-                return true;
-            }
-            return false;
-
-        }
-
 
         /// <summary>
         /// Update the property dictionary of the given file.
@@ -2113,6 +2112,35 @@ namespace QuickstartiLogicLibrary
             return false;
         }
 
+        private bool IsCadFile(System.IO.FileInfo FileInfo)
+        {
+            //don't add Inventor files except single part files
+            List<string> mFileExtensions = new List<string> { ".ipt", ".iam", "ipn", ".idw", ".dwg", ".rvt", ".nwd", ".nwc", ".sldprt", ".sldasm", ".slddrw", ".dgn", ".prt", ".asm", ".drw" };
+            if (mFileExtensions.Any(n => FileInfo.Extension == n))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsFilePath(string path)
+        {
+            if (System.IO.File.Exists(path)) return true;
+            return false;
+        }
+
+        private bool IsDirPath(string path)
+        {
+            if (System.IO.Directory.Exists(path)) return true;
+            return false;
+        }
+
+
+        /// <summary>
+        /// Get File properties as DisplayName/Value map
+        /// </summary>
+        /// <param name="mFileIt">Autodesk Connectivity Webservice File Version (Iteration) Object</param>
+        /// <param name="VaultFileProperties">DisplayName/Value dictionary of file iteration's properties</param>
         private void mGetFileProps(VDF.Vault.Currency.Entities.FileIteration mFileIt, ref Dictionary<string, string> VaultFileProperties)
         {
             ACW.PropDef[] mPropDefs = conn.WebServiceManager.PropertyService.GetPropertyDefinitionsByEntityClassId("FILE");
@@ -2141,10 +2169,10 @@ namespace QuickstartiLogicLibrary
 
 
         /// <summary>
-        /// 
+        /// Get Item properties as DisplayName/Value map
         /// </summary>
         /// <param name="item">Autodesk Connectivity Webservice Item object</param>
-        /// <param name="VaultItemProperties">pairs of Vault Item property display name and property value</param>
+        /// <param name="VaultItemProperties">DisplayName/Value dictionary of Item version's properties</param>
         private void mGetItemProps(ACW.Item item, ref Dictionary<string, string> VaultItemProperties)
         {
             string mPropDispName = null;
