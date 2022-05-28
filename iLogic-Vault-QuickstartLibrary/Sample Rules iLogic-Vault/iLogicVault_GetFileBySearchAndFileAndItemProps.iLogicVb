@@ -30,7 +30,7 @@ Sub Main
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
 	Else
-		Logger.Info("File " & mVaultFile & " downloaded.")
+		Logger.Info("File " & mVaultFile & " (including dependent and attachment files) downloaded.")
 		For Each item In mVaultFileProps
 			Logger.Info("Vault File Property Name/Value: " + item.Key + " = " + item.Value)
 		Next

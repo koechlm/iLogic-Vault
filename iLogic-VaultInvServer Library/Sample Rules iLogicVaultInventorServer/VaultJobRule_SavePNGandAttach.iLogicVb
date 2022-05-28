@@ -1,4 +1,6 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
+﻿AddReference "QuickstartiLogicVltInvSrvLibrary.dll"
+AddReference "Autodesk.Connectivity.WebServices.dll"
+AddReference "Autodesk.DataManagement.Client.Framework.Vault.dll"
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -6,30 +8,42 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	'Note - This rule expects that the current document is vaulted.
 	break
-	Dim ex As Exception
+	Dim ex As New Exception
 
 	'the rule applies to part and assembly files only
-	If ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kAssemblyDocumentObject And ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kPartDocumentObject
+	If ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kAssemblyDocumentObject And ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kPartDocumentObject Then
 		Logger.Info("Rule iLogicVault_AddFileAndAttach applies to part and assembly documents only. Exited without action.")
 		Return
 	End If
 
-	'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
-	If iLogicVault.LoggedIn = False
-		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
-		Exit Sub
-	End If
+	'get the job processor's Vault connection (note - this is different from Inventor Application)
+	Dim iLogicVault As New QuickstartiLogicVltInvSrvLibrary.iLogicVltInvSrvLibrary
+	Dim LoggedIn As Boolean
+	Dim FileState As String
+	Try
+		dbServer = RuleArguments("ServerName")
+		fServer = RuleArguments("ServerName")
+		vltName = RuleArguments("VaultName")
+		userId = RuleArguments("UserId")
+		SessionId = RuleArguments("SessionId")
+		LoggedIn = iLogicVault.ReuseConnection(dbServer, fServer, vltName, userId, SessionId)
+		If LoggedIn = False Then
+			Logger.Error("Rule could not re-use Job Processor's Vault Login.")
+			Throw ex
+		End If
+	Catch
+		Logger.Error("Failed Reading Rule Arguments.")
+		Throw ex
+	End Try
 
 	'check the vault status of the file; the rule expects that the file exists in vault and is not checked out
 	Dim mDocVaultStatus As New Dictionary(Of String, String)
 	mDocVaultStatus = iLogicVault.GetVaultFileStatus(ThisDoc.PathAndFileName(True))
-	If mDocVaultStatus.Item("ErrorState") = "None"
-		If mDocVaultStatus.Item("CheckOutState") <> "NotCheckedOut" Or mDocVaultStatus.Item("LockState") <> "Unlocked"
+	If mDocVaultStatus.Item("ErrorState") = "None" Then
+		If mDocVaultStatus.Item("CheckOutState") <> "NotCheckedOut" Or mDocVaultStatus.Item("LockState") <> "Unlocked" Then
 			Logger.Error("This rule expects the active document being available for checkout to the current user, but must not be checked out.")
-			Exit sub
+			Throw ex
 		End If
 	Else
 		Logger.Error("ErrorState = " + mDocVaultStatus.Item("ErrorState") + ". This rule expects that the active document is vaulted!")
@@ -61,13 +75,15 @@ Sub Main
 		Dim mVaultPath As String = iLogicVault.ConvertLocalPathToVaultPath(bitmapName)
 		Dim mParentVaultFullFileName = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Document.FullFileName) + "/" + ThisDoc.FileName(True)
 		success = iLogicVault.AddFile(bitmapName, mVaultPath, True, mParentVaultFullFileName)
-		If (success <> True)Then
+		If (success <> True) Then
 			Logger.Error("Failed to add/update image file to Vault")
+			Throw ex
 		Else
 			Logger.Info("Successfully created, uploaded and attached image file.")
 		End If
 	Else
 		Logger.Error("Failed to clean-up local workspace before creating bitmap file.")
+		Throw ex
 	End If
 
 End Sub

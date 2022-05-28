@@ -30,13 +30,34 @@
     </CodeSnippet>
     <CodeSnippet>
       <Category>iLogicVault</Category>
+      <Name>Add File and attach to parent</Name>
+      <ToolTip>check-in a (newly) file and attach it to the rule's document</ToolTip>
+      <Index>4008</Index>
+      <Code>
+        <![CDATA['create the new file's name
+Dim NewFileName = ThisDoc.ChangeExtension(".EXT")
+
+'create the new file
+'e.g., save as bitmap file
+
+'upload file as new or incremental file iteration and attach to thisdoc in Vault
+Dim mVaultPath As String = iLogicVault.ConvertLocalPathToVaultPath(NewFileName)
+Dim mParentVaultFullFileName = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Document.FullFileName) + "/" + ThisDoc.FileName(True)
+success = iLogicVault.AddFile(NewFileName, mVaultPath, True, mParentVaultFullFileName)
+If (success <> True)Then
+	Logger.Error("Failed to add/update image file to Vault")
+Else
+	Logger.Info("Successfully created, uploaded and attached image file.")
+End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
       <Name>Get Vault File by FullFilePath</Name>
       <ToolTip>iLogicVault.GetFileByFullFilePath( "$/Designs/&lt;your file name&gt;")</ToolTip>
       <Index>2003</Index>
       <Code>
-        <![CDATA['Downloads Vault file Using full File Path, e.g. "$/Designs/Base.ipt". Returns full File name In local working folder (download enforces override, If local File exists),
-'Preset Options: Download Children (recursively) = Enabled, Enforce Overwrite = True'
-'Optionally check-out the file; preset: check-out = false
+        <![CDATA['Download a single file to the local working folder
 Dim mVaultFile As String = iLogicVault.GetFileByFullFilePath("$/") 'add ..., True) to enable check-out of downloaded file.
 If mVaultFile Is Nothing Then
 	Logger.Error("Vault file not found - Please double check that file exists in Vault.")
@@ -54,12 +75,12 @@ End If]]>
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	mSearchParams.Add("Vault Property Name", "Value")
+	mSearchParams.Add("Vault Property Name", "Value")
 	'...add as many as required to enable a unique search result
 
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, False)
+	mVaultFile = iLogicVault.GetFileBySearchCriteria(mSearchParams, True, False) ', True: combine search criteria by AND; , , False: don't check-out
 
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file search: File not found - Please double check that file can be found with search criteria applied.")
@@ -71,43 +92,39 @@ End If]]>
     </CodeSnippet>
     <CodeSnippet>
       <Category>iLogicVault</Category>
-      <Name>Get Multiple Vault Files by Search</Name>
-      <ToolTip>Search 1 to many files and download all; optionally check-out.</ToolTip>
-      <Index>2015</Index>
+      <Name>Get Vault File Status</Name>
+      <ToolTip>Get the Vault file status, to leverage result in pre-checks before downloads etc..</ToolTip>
+      <Index>2023</Index>
       <Code>
-        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
-	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "00100*")		'applies to files from 001000 to 001009
-	'...add as many as required to enable a unique search result
-	
-	'the list of downloaded files
-	Dim mVaultFiles As List(Of String)
-	'returns full file names in local working folder (download enforces override, if local file exists)
-	'returns null (nothing) if no files return		
-	mVaultFiles = iLogicVault.GetFilesBySearchCriteria(mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true, searching all folders
-	'prepare output
-	If mVaultFiles.Count = 0 Then
-		Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
-	ElseIf mVaultFiles.Count > 0 Then
-		Dim mFileList As String
-		For Each mFile As String In mVaultFiles
-			mFileList += mFile & vbCr
-		Next
-		Logger.Info("iLogic-Vault file search found: " & mFileList)
-		'so the files are there, do what ever you need to do consuming these...
+        <![CDATA['Retrieve the active document's Vault file status as name/value pairs 
+	Dim mDocVaultStatus As New Dictionary(Of String, String)
+	mDocVaultStatus = iLogicVault.GetVaultFileStatus(ThisDoc.PathAndFileName(True))
+	If mDocVaultStatus.Item("ErrorState") = "None"
+		'validate that the file is available for check out
+		If Not mDocVaultStatus.Item("CheckOutState") <> "NotCheckedOut" Or mDocVaultStatus.Item("LockState") <> "Unlocked" Then
+			'continue to check out the file for edits here...
+		End If
+	Else
+		Logger.Error("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
+		Logger.Error("CheckOutState = " + mDocVaultStatus.Item("CheckOutState"))
+		Logger.Error("ConsumableState = " + mDocVaultStatus.Item("ConsumableState"))
+		Logger.Error("LocalEditsState = " + mDocVaultStatus.Item("LocalEditsState"))
+		Logger.Error("LockState = " + mDocVaultStatus.Item("LockState"))
+		Logger.Error("RevisionState = " + mDocVaultStatus.Item("RevisionState"))
+		Logger.Error("VersionState = " + mDocVaultStatus.Item("VersionState"))
 	End If]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
       <Category>iLogicVault</Category>
       <Name>Check Vault File(s) Exist by Search</Name>
-      <ToolTip>Search Vault files using 1 to n property/value pairs; returns list of file names and shares logger info</ToolTip>
+      <ToolTip>Search Vault files; returns list of file names found.</ToolTip>
       <Index>2008</Index>
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
 Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-mSearchParams.Add("Part Number", "001003")		'applies to file 001003.ipt
-mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+mSearchParams.Add("Part Number", "001003")
+mSearchParams.Add("Title", "Back Side Cover")
 '...add as many as required to enable a unique search result
 
 Dim mVaultFiles As List(Of String)
@@ -120,7 +137,86 @@ ElseIf mVaultFiles.Count > 0 Then
 		mFileList += mFile & vbCr
 	Next
 	Logger.Info("iLogic-Vault file search found: " & mFileList)
+	Logger.Info("iLogic-Vault file search finished.")
 End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Check Vault File(s) Exist by Search and get properties for each</Name>
+      <ToolTip>search for multiple files and get a property name/value map for each file found.</ToolTip>
+      <Index>2022</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
+	Dim mSearchParams As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Vault Property Name", "Value")
+	'mSearchParams.Add("Vault Property Name2", "Value")
+	'...add as many as required to enable a unique search result
+
+	'Nested dictonary for all files property name value maps.
+	Dim mAllFilesProperties As System.Collections.Generic.Dictionary(Of String, Dictionary(Of String, String)) = New Dictionary(Of String, Dictionary(Of String, String))
+
+	Dim mVaultFiles As List(Of String)
+	mVaultFiles = iLogicVault.CheckFilesExistBySearchCriteria(mSearchParams, mAllFilesProperties, True)
+	If mVaultFiles Is Nothing Then
+		Logger.Error("The file(s) searched was(were) not found. Please double check that the search criteria's relevance.")
+	ElseIf mVaultFiles.Count > 0 Then
+		For Each mFile As String In mVaultFiles
+			Logger.Info("iLogic-Vault file search found: " + mFile)
+			Dim mPropValPairs As Dictionary(Of String, String) = mAllFilesProperties(mFile)
+			For Each item In mPropValPairs
+				Logger.Info(mFile + " Property DisplayName=Value: " + item.Key + "=" + item.Value)
+			Next
+			Logger.Info("iLogic-Vault files search finished.")
+		Next
+	End If]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Update Vault File Properties</Name>
+      <ToolTip>Update the file properties of the current file in Vault. The Pre-check validates the prerequisites.</ToolTip>
+      <Index>4007</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value; note the value has to be of the expected type like string (text), decimal (numbers), date (date/time), or boolean (true/false)
+	Dim mPropNameValueMap As New Dictionary(Of String, Object) 'add UDP.DisplayName, UDP.Value object of matching type
+	mPropNameValueMap.Add("Title", "Property Edit at " + Date.Now.ToString)
+	Dim mDate As Date = Date.Now
+	mPropNameValueMap.Add("Checked Date", mDate)
+	Dim mNum As Decimal = 15.60
+	mPropNameValueMap.Add("Cost", mNum)
+	Dim mBool As Boolean = True
+	mPropNameValueMap.Add("MBD", mBool) 'Note - Vault UDP of type Bool must not have "Indeterminate" state; set the default value to True/False
+
+	'we need the file's path in Vault; you can convert the local file path to the corresponding Vault virtual path
+	Dim mVaultFileName As String = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Path) + "/" + ThisDoc.FileName(True)
+
+	'Retrieve the active document's Vault file status as name/value pairs 
+	Dim mDocVaultStatus As New Dictionary(Of String, String)
+	mDocVaultStatus = iLogicVault.GetVaultFileStatus(ThisDoc.PathAndFileName(True))
+	If mDocVaultStatus.Item("ErrorState") = "None" And Not mDocVaultStatus.Item("CheckOutState") <> "NotCheckedOut" Or mDocVaultStatus.Item("LockState") <> "Unlocked"
+		Dim success As Boolean = iLogicVault.UpdateVaultFileProperties(mVaultFileName, mPropNameValueMap)
+		If success = False Then
+			Logger.Error("Update Properties failed; either the file does not exist at the given full file name/path or is not available for check out.")
+		Else
+			Logger.Info("Successfully updated properties of file :" & mVaultFileName)
+			'refresh the Vault Browser
+			oControlDef = ThisApplication.CommandManager.ControlDefinitions.Item("VaultRefresh")
+			oControlDef.Execute2(True)
+		End If
+	Else
+		Logger.Error("Could not start to update the properties; check the status info below:")
+		Logger.Info("CheckOutState = " + mDocVaultStatus.Item("CheckOutState"))
+		Logger.Info("ConsumableState = " + mDocVaultStatus.Item("ConsumableState"))
+		Logger.Info("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
+		Logger.Info("LocalEditsState = " + mDocVaultStatus.Item("LocalEditsState"))
+		Logger.Info("LockState = " + mDocVaultStatus.Item("LockState"))
+		Logger.Info("RevisionState = " + mDocVaultStatus.Item("RevisionState"))
+		Logger.Info("VersionState = " + mDocVaultStatus.Item("VersionState"))
+	End If
+
+End Sub
+]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
@@ -135,7 +231,7 @@ End If]]>
 		oControlDef = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckinTop")
 		oControlDef.Execute2(True)
 	Catch ex As Exception
-		Logger.Error("Undo Check-In failed; likely, the file wasn't checked out.")
+		Logger.Error("Check-In failed; likely, the file wasn't checked out.")
 	End Try]]>
       </Code>
     </CodeSnippet>
@@ -145,7 +241,8 @@ End If]]>
       <ToolTip>check out active document.Note - requires active Vault connection (Snippet iLogic Vault Connection). Calls UI command and may require user interaction, if dialog suppression is activated for 'Check out' command.</ToolTip>
       <Index>2006</Index>
       <Code>
-        <![CDATA[Dim oControlDef As Inventor.ControlDefinition = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckoutTop")
+        <![CDATA[ThisDoc.Save
+Dim oControlDef As Inventor.ControlDefinition = ThisApplication.CommandManager.ControlDefinitions.Item("VaultCheckoutTop")
 oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending before rule exits]]>
       </Code>
     </CodeSnippet>
@@ -172,7 +269,6 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
 	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	'returns "FileNotFound if file does not exist at indicated location
 	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndAutoNumber("$/Designs/Inventor Sample Data/Fishing Rod Model/001012.ipt", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.
 	If mVaultFile Is Nothing Then
 		Logger.Error("File copy not created; check that the file can get found first." )
@@ -210,8 +306,8 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+	mSearchParams.Add("Part Number", "001002")
+	mSearchParams.Add("Title", "Back Side Cover")
 	'...add as many as required to enable a unique search result
 	
 	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
@@ -237,8 +333,8 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
       <Code>
         <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
 		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-		mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-		mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt and to file 001068.iam
+		mSearchParams.Add("Part Number", "001002")
+		mSearchParams.Add("Title", "Back Side Cover")
 		'...add as many as required to enable a unique search result
 	
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
@@ -289,6 +385,35 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
 	Dim mFullFileName As String = ThisDoc.Document.FullFileName
 	'Call file copy The source file's location and extension are captured and apply to the copy. Returns local path/filename or error statement "LocalFileCopyFailed"
 	Dim mLocaFileCopy As String = iLogicVault.mCopyLocalFile(mFullFileName, mFileNumber)]]>
+      </Code>
+    </CodeSnippet>
+    <CodeSnippet>
+      <Category>iLogicVault</Category>
+      <Name>Get Multiple Vault Files (Searched)</Name>
+      <ToolTip>Search 1 to many files and download all; optionally check-out.</ToolTip>
+      <Index>2015</Index>
+      <Code>
+        <![CDATA['Build one to many name/value pairs of Property/Value as search criteria;
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Part Number", "00100*")
+	'...add as many as required to enable a unique search result
+	
+	'the list of downloaded files
+	Dim mVaultFiles As List(Of String)
+	'returns full file names in local working folder (download enforces override, if local file exists)
+	'returns null (nothing) if no files return		
+	mVaultFiles = iLogicVault.GetFilesBySearchCriteria(mSearchParams, False, False)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true, searching all folders
+	'prepare output
+	If mVaultFiles.Count = 0 Then
+		Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
+	ElseIf mVaultFiles.Count > 0 Then
+		Dim mFileList As String
+		For Each mFile As String In mVaultFiles
+			mFileList += mFile & vbCr
+		Next
+		Logger.Info("iLogic-Vault file search found: " & mFileList)
+		'so the files are there, do what ever you need to do consuming these...
+	End If]]>
       </Code>
     </CodeSnippet>
     <CodeSnippet>
@@ -363,5 +488,5 @@ oControlDef.Execute2(True) 'synchroneous execution; wait for the commands ending
 	End If]]>
       </Code>
     </CodeSnippet>
-  </Snippets>
+	</Snippets>
 </CodeSnippets>
