@@ -1,0 +1,60 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+	break
+	'updating properties requires loading of Vault ExtensibilitzTools from Vault client installation
+	Dim version As String = ThisApplication.ComparisonVersion
+	Dim assem, assem2 As Object
+	assem = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Extensibility.Framework.dll")
+	assem2 = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
+
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+
+	'Build one to many name/value pairs of Property/Value; note the value has to be of the expected type like string (text), decimal (numbers), date (date/time), or boolean (true/false)
+	Dim mPropNameValueMap As New Dictionary(Of String, Object) 'add UDP.DisplayName, UDP.Value object of matching type
+	mPropNameValueMap.Add("Title", "Property Edit at " + Date.Now.ToString)
+	Dim mDate As Date = Date.Now
+	mPropNameValueMap.Add("Checked Date", mDate)
+	Dim mNum As Decimal = 15.60
+	mPropNameValueMap.Add("Cost", mNum)
+	Dim mBool As Boolean = True
+	mPropNameValueMap.Add("MBD", mBool) 'Note - Vault UDP of type Bool must not have "Indeterminate" state; set the default value to True/False
+
+	'we need the file's path in Vault; you can convert the local file path to the corresponding Vault virtual path
+	Dim mVaultFileName As String = iLogicVault.ConvertLocalPathToVaultPath(ThisDoc.Path) + "/" + ThisDoc.FileName(True)
+
+	'Retrieve the active document's Vault file status as name/value pairs 
+	Dim mDocVaultStatus As New Dictionary(Of String, String)
+	mDocVaultStatus = iLogicVault.GetVaultFileStatus(ThisDoc.PathAndFileName(True))
+	If mDocVaultStatus.Item("ErrorState") = "None" And Not mDocVaultStatus.Item("CheckOutState") <> "NotCheckedOut" Or mDocVaultStatus.Item("LockState") <> "Unlocked"
+		Dim success As Boolean = iLogicVault.UpdateVaultFileProperties(mVaultFileName, mPropNameValueMap)
+		If success = False Then
+			Logger.Error("Update Properties failed; either the file does not exist at the given full file name/path or is not available for check out.")
+		Else
+			Logger.Info("Successfully updated properties of file :" & mVaultFileName)
+			'refresh the Vault Browser
+			oControlDef = ThisApplication.CommandManager.ControlDefinitions.Item("VaultRefresh")
+			oControlDef.Execute2(True)
+		End If
+	Else
+		Logger.Error("Could not start to update the properties; check the status info below:")
+		Logger.Info("CheckOutState = " + mDocVaultStatus.Item("CheckOutState"))
+		Logger.Info("ConsumableState = " + mDocVaultStatus.Item("ConsumableState"))
+		Logger.Info("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
+		Logger.Info("LocalEditsState = " + mDocVaultStatus.Item("LocalEditsState"))
+		Logger.Info("LockState = " + mDocVaultStatus.Item("LockState"))
+		Logger.Info("RevisionState = " + mDocVaultStatus.Item("RevisionState"))
+		Logger.Info("VersionState = " + mDocVaultStatus.Item("VersionState"))
+	End If
+
+End Sub

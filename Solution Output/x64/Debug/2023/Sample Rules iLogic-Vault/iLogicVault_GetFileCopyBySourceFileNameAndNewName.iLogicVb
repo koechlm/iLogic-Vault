@@ -1,0 +1,32 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+	
+	'Sample based on Vault "PDMC-Sample" available; adopt search criteria or file path(s) below according other Vault's content.
+	
+		'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+		
+	'set new file name according your requirements. Use snippet includin auto-numbering if no individual file name applies.
+	Dim mNewFileName As String = System.Guid.NewGuid.ToString() 'replace unique ID by your naming configuration, e.g. sequence of f(x) key parameter values
+	
+	'returns full file name in local working folder (download enforces override, if local file exists)
+	'returns "FileNotFound if file does not exist at indicated location
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndNewName("$/Designs/Inventor Sample Data/Fishing Rod Model/001012.ipt", mNewFileName, False) 'optionally add the mNumInput variable; note - new file name must not contain an extension! The check-out option is True as default; set to False or remove.
+	If mVaultFile Is Nothing Then
+		Logger.Error("File copy not created; validate source file can be found and new file name." )
+	Else
+		Logger.Info("File " & mVaultFile & " created As copy.")
+			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+	End If
+	
+End Sub

@@ -1,0 +1,76 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+
+	Dim ex As Exception
+	break
+
+	'the rule applies to part and assembly files only
+	If ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kAssemblyDocumentObject And ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kPartDocumentObject
+		Logger.Info("Rule iLogicVault_AddFileAndAttach applies to part and assembly documents only. Exited without action.")
+		Return
+	End If
+
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+
+	'create camera object; note InventorServer does not provide document views
+	Dim camera As Inventor.Camera = ThisServer.TransientObjects.CreateCamera
+	camera.SceneObject = ThisDoc.Document.ComponentDefinition
+	'position the camera
+	camera.ViewOrientationType = Inventor.ViewOrientationTypeEnum.kIsoTopRightViewOrientation
+	camera.Fit()
+	camera.ApplyWithoutTransition()
+
+	Dim topClr As Color
+	topClr = ThisServer.TransientObjects.CreateColor(255, 255, 255)
+	Dim bottomClr As Color
+	bottomClr = ThisServer.TransientObjects.CreateColor(255, 255, 255)
+
+	'derive file name from source
+	Dim bitmapName As String = ThisDoc.ChangeExtension(".png")
+
+	'clean local working folder; existing files in Vault update a new iteration
+	success = mCleanWfFile(bitmapName)
+	If success = True Then
+		'save the image file
+		camera.SaveAsBitmap(bitmapName, 1280, 768, topClr, bottomClr)
+
+		'upload file as new or incremental file iteration
+		Dim mVaultPath As String = iLogicVault.ConvertLocalPathToVaultPath(bitmapName)
+		success = iLogicVault.AddFile(bitmapName, mVaultPath, True)
+		If (success <> True)
+			Logger.Error("Failed to add/update image file to Vault")
+			Exit Sub
+		Else
+			Logger.Info("Image file successfully created and uploaded to Vault.")
+		End If
+	End If
+
+End Sub
+
+Private Function mCleanWfFile(mFile As String) As Boolean
+	'Delete existing file to avoid overwrite restrictions
+	Dim oFileInfo As New System.IO.FileInfo(mFile)
+	Try
+		If oFileInfo.Exists = True Then
+			If (oFileInfo.Attributes) Then
+				oFileInfo.Attributes = (oFileInfo.Attributes And Not oFileInfo.Attributes.ReadOnly)
+				System.IO.File.Delete(mFile)
+			End If
+		End If
+		Return True
+	Catch
+		Return False
+	End Try
+End Function
+

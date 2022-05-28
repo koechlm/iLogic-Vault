@@ -1,0 +1,34 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+	Break
+	'Sample based on Vault "PDMC-Sample" available; adopt search criteria or file path(s) below according other Vault's content.
+	
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+	
+	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
+	Dim mNumSchmName As String = "Default"
+	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
+	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
+	
+	'returns full file name in local working folder (download enforces override, if local file exists)
+	'returns "FileNotFound if file does not exist at indicated location
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndAutoNumber("$/Designs/Inventor Sample Data/Fishing Rod Model/001012.ipt", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.
+	If mVaultFile Is Nothing Then
+		Logger.Error("File copy not created; check that the file can get found first." )
+	Else
+		Logger.Info("File " & mVaultFile & " created As copy.")
+			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+	End If
+	
+End Sub

@@ -1,0 +1,31 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+	break
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+
+	'Retrieve the active document's Vault file status as name/value pairs 
+	Dim mDocVaultStatus As New Dictionary(Of String, String)
+	mDocVaultStatus = iLogicVault.GetVaultFileStatus(ThisDoc.PathAndFileName(True))
+	If mDocVaultStatus.Item("ErrorState") = "None"
+		Logger.Info("CheckOutState = " + mDocVaultStatus.Item("CheckOutState"))
+		Logger.Info("ConsumableState = " + mDocVaultStatus.Item("ConsumableState"))
+		Logger.Info("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
+		Logger.Info("LocalEditsState = " + mDocVaultStatus.Item("LocalEditsState"))
+		Logger.Info("LockState = " + mDocVaultStatus.Item("LockState"))
+		Logger.Info("RevisionState = " + mDocVaultStatus.Item("RevisionState"))
+		Logger.Info("VersionState = " + mDocVaultStatus.Item("VersionState"))
+	Else
+		Logger.Error("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
+	End If
+End Sub

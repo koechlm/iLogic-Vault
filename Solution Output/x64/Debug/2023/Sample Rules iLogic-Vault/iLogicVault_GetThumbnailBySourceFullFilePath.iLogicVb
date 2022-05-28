@@ -1,0 +1,25 @@
+﻿AddReference "QuickstartiLogicLibrary.dll"
+AddReference "System.Drawing"
+'DISCLAIMER:
+'---------------------------------
+'In any case, code, templates, and snippets of this solution are of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+
+Sub Main
+
+	'enable iLogicVault commands and validate user's login state
+	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	If iLogicVault.LoggedIn = False
+		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
+		Exit Sub
+	End If
+	
+	Dim mImage As System.Drawing.Image = iLogicVault.GetThumbnailImageByFullSourceFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt", 254, 254)
+	If mImage Is Nothing Then
+		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
+	Else
+			''..as of today, the consumption of Image objects is for custom dialogs (dll) only...
+			
+	End If
+End Sub
