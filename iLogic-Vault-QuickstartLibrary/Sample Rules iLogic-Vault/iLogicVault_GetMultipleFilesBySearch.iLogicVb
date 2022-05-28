@@ -29,11 +29,13 @@ Sub Main
 	If mVaultFiles.Count = 0 Then
 		Logger.Error("The file searched was not found. Please double check that files can be found with search criteria applied.")
 	ElseIf mVaultFiles.Count > 0 Then
+		mVaultFiles.Sort()
 		Dim mFileList As String
 		For Each mFile As String In mVaultFiles
 			mFileList += vbCr & mFile 
 		Next
 		Logger.Info("iLogic-Vault file search found and downloaded (note: dependent and attachment files are included in the download, but not listed): " & mFileList)
+		Logger.Info("Multiple file search and download finished.")
 		'so the files are there, do what ever you need to do consuming these...
 	End If
 

@@ -64,22 +64,14 @@ namespace QuickstartiLogicVltInvSrvLibrary
         /// <param name="FullFileName">File path and name of file to add in local working folder.</param>
         /// <param name="VaultFolderPath">Full path in Vault, e.g. "$/Designs/P-00000</param>
         /// <param name="UpdateExisting">Creates new file version if existing file is available for check-out.</param>
-        /// <param name="DisableCheckInDesignFiles">The recommended default blocking Inventor, AutoCAD, Navisworks, Microstation, Solidworks and PRO-E files to maintain file relationships. Disable for exeptions like single dwg export files only.</param>
         /// <param name="ParentFileToAttachTo">Creates an attachment to the parent file consuming the newly added file; 
         /// provide Vault path and file name ('$/...') of parent file to attach to</param>
         /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for IAM, IPN, IDW/DWG.
         /// Returns false if the file added, but could not attach to the parent.</returns>
-        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, bool DisableCheckInDesignFiles = true, string ParentFileToAttachTo = null)
+        public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, string ParentFileToAttachTo = null)
         {
-            //exclude CAD files with references
             System.IO.FileInfo mLocalFileInfo = new System.IO.FileInfo(FullFileName);
-            if (DisableCheckInDesignFiles == true)
-            {
-                if (IsCadFile(mLocalFileInfo))
-                {
-                    return false;
-                }
-            }
+
             Autodesk.Connectivity.WebServicesTools.WebServiceManager mWsMgr = conn.WebServiceManager;
 
             ACW.Folder mFolder = mWsMgr.DocumentService.FindFoldersByPaths(new string[] { VaultFolderPath }).FirstOrDefault();
