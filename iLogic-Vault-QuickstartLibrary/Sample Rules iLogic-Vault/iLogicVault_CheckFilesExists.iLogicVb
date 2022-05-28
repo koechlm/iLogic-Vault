@@ -30,6 +30,7 @@ Sub Main
 			mFileList += vbCr & mFile
 		Next
 		Logger.Info("iLogic-Vault file search found: " & mFileList)
+		Logger.Info("iLogic-Vault file search finished.")
 	End If
 
 End Sub

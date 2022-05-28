@@ -83,7 +83,21 @@
     <Compile Include="iLogicVltInvSrvLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRuleConnected.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_ApplyPdmcBOMSettings.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_ExportRevitSimplification.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_IdwPrint.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_MasterSample-1.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_ObsoleteDrawing.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_Save2D.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_Save3D.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_SavePNG.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_SavePNGandAttach.iLogicVb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_UidToiProp.ilogicvb" />
+    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_WriteBOMTypeToProp.iLogicVb" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="Rule Snippets\UserSnippets_iLogicVaultInventorServer.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
