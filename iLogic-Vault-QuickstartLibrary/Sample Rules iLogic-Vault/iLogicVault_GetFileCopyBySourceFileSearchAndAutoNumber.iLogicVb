@@ -17,8 +17,7 @@ Sub Main
 		
 	'Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt
+	mSearchParams.Add("Name", "001002.ipt")	'applies to file 001002.ipt	
 	'...add as many as required to enable a unique search result
 	
 	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
@@ -27,7 +26,7 @@ Sub Main
 	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndAutoNumber(mSearchParams, mNumSchmName, True, , False) 'the default for optional parameter MatchAllCriteria = false, CheckOut = true, and search in all folders starting from root $/
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndAutoNumber(mSearchParams, mNumSchmName, True, , False, , True) 'the default for optional parameter MatchAllCriteria = false, CheckOut = true, and search in all folders starting from root $/
 	If mVaultFile Is Nothing Then
 		Logger.Error("File copy not created; verify that the file can be found by the search criteria applied. Also verify your input of numbering sheme name and optional parameters")
 	Else

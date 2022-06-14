@@ -17,16 +17,15 @@ Sub Main
 	
 	'Build one to many name/value pairs of Property/Value as search criteria;
 		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-		mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-		mSearchParams.Add("Title", "Back Side Cover") 	'applies to file 001002.ipt
-		'...add as many as required to enable a unique search result
-	
+	mSearchParams.Add("Name", "001002.ipt") 'applies to file 001002.ipt
+	'...add as many as required to enable a unique search result
+
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
 	Dim mNumInput As New System.Collections.Generic.List(Of String)
 	
 	'returns full file name in local working folder (download enforces override, if local file exists)
 	Dim mNewFileName As String = System.Guid.NewGuid.ToString() 'replace unique ID by your naming configuration, e.g. sequence of f(x) key parameter values
-	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndNewName(mSearchParams, mNewFileName, True, True)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndNewName(mSearchParams, mNewFileName, True, True, , True)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
 	If mVaultFile Is Nothing Then
 		Logger.Error("File copy not created; check that the source file can get found by the search criteria applied.")
 	Else
