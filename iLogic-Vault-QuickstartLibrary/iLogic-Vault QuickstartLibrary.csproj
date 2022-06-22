@@ -124,79 +124,79 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFile.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFileAndAttach.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExists.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckFilesExistsAndGetProperties.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckIn.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_CheckOut.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePath.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePathAndFileItemProps.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileByFullFilePathAndFileProps.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearch.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchAndFileAndItemProps.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileBySearchUsingFolderOption.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyByBySourceFileNameAndAutoNumber.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndAutoNumber.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileSearchAndNewName.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileNumber_&amp;_CopyLocalFile.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetMultipleFilesBySearch.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySearch.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailBySourceFullFilePath.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySearch.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetThumbnailFileBySourceFullFilePath.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetVaultFileStatus.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UndoCheckOut.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Sample Rules iLogic-Vault\iLogicVault_UpdateVaultFileProperties.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

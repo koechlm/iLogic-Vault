@@ -94,9 +94,6 @@
     <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_ApplyPdmcBOMSettings.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_ExportRevitSimplification.iLogicVb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Sample Rules iLogicVaultInventorServer\VaultJobRule_IdwPrint.iLogicVb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
