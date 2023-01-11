@@ -20,9 +20,8 @@ Sub Main
 	Dim mNumSchmName As String = "Default"
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
 	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
-	
+
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	'returns "FileNotFound if file does not exist at indicated location
 	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndAutoNumber("$/Designs/Inventor Sample Data/Fishing Rod Model/001012.ipt", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.
 	If mVaultFile Is Nothing Then
 		Logger.Error("File copy not created; check that the file can get found first." )

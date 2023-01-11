@@ -103,14 +103,15 @@ namespace QuickstartiLogicLibrary
         }
 
         /// <summary>
-        /// Adds local file to Vault and optionally attaches it to a parent file.
+        /// Adds local file to Vault and optionally attaches it to a parent file. Does NOT build parent-child relationships! 
+        /// So this function should not be used on any file (e.g. an assembly or drawing) that contains references to other files.
         /// </summary>
         /// <param name="FullFileName">File path and name of file to add in local working folder.</param>
         /// <param name="VaultFolderPath">Full path in Vault, e.g. "$/Designs/P-00000</param>
         /// <param name="UpdateExisting">Creates new file version if existing file is available for check-out.</param>
         /// <param name="ParentFileToAttachTo">Creates an attachment to the parent file consuming the newly added file; 
         /// provide Vault path and file name ('$/...') of parent file to attach to</param>
-        /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false. Returns false for IAM, IPN, IDW/DWG.
+        /// <returns>Returns True/False on success/failure; returns false if the file exists and UpdateExisting = false.
         /// Returns false if the file added, but could not attach to the parent.</returns>
         public bool AddFile(string FullFileName, string VaultFolderPath, bool UpdateExisting = true, string ParentFileToAttachTo = null)
         {
