@@ -1,27 +1,24 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
-'DISCLAIMER:
+﻿'DISCLAIMER:
 '---------------------------------
-'In any case, code, templates, and snippets of this solution are of "work in progress" character.
-'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
-'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+'In any Case, code, templates, And snippets Of this solution are Of "work in progress" character.
+'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, Or otherwise valid. 
+'Accordingly, those Configuration samples are provided “as is” With no warranty Of any kind And you use the applications at your own risk.
 
 Sub Main
-	'Sample based on Vault "PDMC-Sample" available; adopt search criteria below according other Vault's content.
-	'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	
+	'Validate user's login state
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
-	End If
+	End If	
 
 	'Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover*") 	'applies to file 001002.ipt and to file 001068.iam
-	'...add as many as required to enable a unique search result
+	mSearchParams.Add("Part Number", "407-02")	'applies to the file $\Designs\Inventor Sample Data\Fishing Rod\Back Side Cover.ipt
+	mSearchParams.Add("Name", "Back Side Cover*") 'applies to the files Back Side Cover.ipt and Back Side Cover.iam
 	
 	Dim mVaultFiles As List(Of String)
-	mVaultFiles = iLogicVault.CheckFilesExistBySearchCriteria(mSearchParams, False) 'returns file name(s)
+	mVaultFiles = iLogicVault.CheckFilesExistBySearchCriteria(mSearchParams, False) 'returns multiple files, if MatchAllCriteria is False; returns single file if MatchAllCriteria is True
 	If mVaultFiles Is Nothing Then
 		Logger.Error("The file(s) searched was(were) not found. Please double check that the search criteria's relevance.") 
 	ElseIf mVaultFiles.Count > 0 Then

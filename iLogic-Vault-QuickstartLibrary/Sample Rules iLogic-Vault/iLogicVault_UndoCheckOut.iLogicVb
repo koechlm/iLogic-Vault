@@ -1,4 +1,4 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
+﻿
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -6,13 +6,12 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	'Validate user's login state
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
-	
+
 	Try
 		Dim oApp As Inventor.Application = ThisApplication
 		Dim oControlDef As Inventor.ControlDefinition

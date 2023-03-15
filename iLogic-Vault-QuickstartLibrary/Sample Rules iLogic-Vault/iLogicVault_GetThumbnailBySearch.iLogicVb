@@ -1,5 +1,4 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
-AddReference "System.Drawing"
+﻿AddReference "System.Drawing"
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -7,9 +6,7 @@ AddReference "System.Drawing"
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	
-	'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	'Validate user's login state
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
@@ -17,14 +14,14 @@ Sub Main
 	
 	'Build one to many name/value pairs of Property/Value as search criteria
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Name", "001002.ipt")	'applies to file 001002.ipt
+	mSearchParams.Add("Part Number", "407-02")	'applies to the file $\Designs\Inventor Sample Data\Fishing Rod\Back Side Cover.ipt
 	'...add as many as required to enable a unique search result
 	
 	Dim mImage As System.Drawing.Image = iLogicVault.GetThumbnailImageBySearchCriteria(mSearchParams, True)
 	If mImage Is Nothing Then
 		Logger.Error("Could not convert thumbnail to image file - Please double check that file exists in Vault including a thumbnail.")
 	Else
-			''..as of today, the consumption of Image objects is for custom dialogs (dll) only...
+		Logger.Info("Successfully downloaded thumbnail as image object; as of today, the consumption of Image objects is for custom dialogs (dll) only.")		
 			
 	End If
 End Sub

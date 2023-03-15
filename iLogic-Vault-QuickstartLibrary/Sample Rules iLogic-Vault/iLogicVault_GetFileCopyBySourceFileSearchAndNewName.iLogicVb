@@ -1,4 +1,4 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
+﻿
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -6,23 +6,20 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	'Sample based on Vault "PDMC-Sample" available; adopt search criteria or file path(s) below according other Vault's content.
-	
-		'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	'Validate user's login state
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
-	
+
 	'Build one to many name/value pairs of Property/Value as search criteria;
-		Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Name", "001002.ipt") 'applies to file 001002.ipt
+	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
+	mSearchParams.Add("Part Number", "407-02")	'applies to the file $\Designs\Inventor Sample Data\Fishing Rod\Back Side Cover.ipt
 	'...add as many as required to enable a unique search result
 
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
 	Dim mNumInput As New System.Collections.Generic.List(Of String)
-	
+
 	'returns full file name in local working folder (download enforces override, if local file exists)
 	Dim mNewFileName As String = System.Guid.NewGuid.ToString() 'replace unique ID by your naming configuration, e.g. sequence of f(x) key parameter values
 	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileSearchAndNewName(mSearchParams, mNewFileName, True, True, , True)  'the default for optional parameter MatchAllCriteria = false, CheckOut = true 
@@ -30,7 +27,7 @@ Sub Main
 		Logger.Error("File copy not created; check that the source file can get found by the search criteria applied.")
 	Else
 		Logger.Info("File " & mVaultFile & " created As New copy Of search result.")
-			'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
+		'add next action using the downloaded file here, e.g. Component.Replace("Part1:1", mVaultFile, True)
 	End If
-	
+
 End Sub

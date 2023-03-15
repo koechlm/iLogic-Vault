@@ -1,4 +1,4 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
+﻿
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -6,17 +6,16 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+	'Validate user's login state
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
-	End If
-	break
+	End If	
+
 	'returns full file name in local working folder (download enforces override, if local file exists); hand over an empty dictionary for properties
 	Dim mVaultFileProps As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
 	Dim mVaultItemProps As System.Collections.Generic.Dictionary(Of String, String) = New Dictionary(Of String, String)
-	Dim mVaultFile As String = iLogicVault.GetFileByFullFilePath("$/Designs/Inventor Sample Data/Fishing Rod Model/001002.ipt", mVaultFileProps, mVaultItemProps) 'Optionally add ..., True) to activate check out for the file downloaded.
+	Dim mVaultFile As String = iLogicVault.GetFileByFullFilePath("$/Designs/Inventor Sample Data/Fishing Rod/Back Side Cover.ipt", mVaultFileProps, mVaultItemProps) 'Optionally add ..., True) to activate check out for the file downloaded.
 	If mVaultFile Is Nothing Then
 		Logger.Error("Vault file not found. Please double check that file path is correct or that the file exists in Vault.")
 	Else

@@ -1,4 +1,4 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
+﻿
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -6,18 +6,15 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
 
 Sub Main
-	'Sample based on Vault "PDMC-Sample" available; adopt search criteria below according other Vault's content.
-	
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
-	If iLogicVault.loggedIn = False
+	'Validate user's login state
+	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
 	
 	'Build one to many name/value pairs of Property/Value as search criteria
 	Dim mSearchParams As New System.Collections.Generic.Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
-	mSearchParams.Add("Part Number", "001002")	'applies to file 001002.ipt
-	mSearchParams.Add("Title", "Back Side Cover*") 	'applies to file 001002.ipt and to file 001068.iam
+	mSearchParams.Add("Part Number", "407-02")	'applies to the file $\Designs\Inventor Sample Data\Fishing Rod\Back Side Cover.ipt
 	'...add as many as required to enable a unique search result
 
 	'optionally build an array of folders to search in. If we don't all folders are searched. So it's good practice adding the Inventor relevant folders as a default

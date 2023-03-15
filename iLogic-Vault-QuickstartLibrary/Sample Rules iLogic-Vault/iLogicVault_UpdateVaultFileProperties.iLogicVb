@@ -1,4 +1,4 @@
-﻿AddReference "QuickstartiLogicLibrary.dll"
+﻿
 'DISCLAIMER:
 '---------------------------------
 'In any case, code, templates, and snippets of this solution are of "work in progress" character.
@@ -9,17 +9,15 @@ Sub Main
 	break
 	'updating properties requires loading of Vault ExtensibilitzTools from Vault client installation
 	Dim version As String = ThisApplication.ComparisonVersion
-	Dim assem, assem2 As Object
-	assem = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Extensibility.Framework.dll")
-	assem2 = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
-
-	'enable iLogicVault commands and validate user's login state
-	Dim iLogicVault As New QuickstartiLogicLibrary.QuickstartiLogicLib
+'	Dim assem, assem2 As Object
+'	assem = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Extensibility.Framework.dll")
+'	assem2 = System.Reflection.Assembly.LoadFrom("C:\Program Files\Autodesk\Vault Client " + version + "\Explorer\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll")
+	'Validate user's login state
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
-
+	
 	'Build one to many name/value pairs of Property/Value; note the value has to be of the expected type like string (text), decimal (numbers), date (date/time), or boolean (true/false)
 	Dim mPropNameValueMap As New Dictionary(Of String, Object) 'add UDP.DisplayName, UDP.Value object of matching type
 	mPropNameValueMap.Add("Title", "Property Edit at " + Date.Now.ToString)
