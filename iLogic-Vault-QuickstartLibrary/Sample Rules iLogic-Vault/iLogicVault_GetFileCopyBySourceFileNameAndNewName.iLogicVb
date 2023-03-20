@@ -1,13 +1,13 @@
-﻿
-'DISCLAIMER:
+﻿'DISCLAIMER:
 '---------------------------------
-'In any case, code, templates, and snippets of this solution are of "work in progress" character.
-'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
-'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+'In any case, this solution's code, templates, and snippets are of "work in progress" character.
+'Autodesk does Not represent that these samples are reliable, accurate, complete, Or otherwise valid For production usage. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
+
 	'Validate user's login state
-	If iLogicVault.LoggedIn = False
+	If iLogicVault.LoggedIn = FalseThen
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If	
@@ -16,7 +16,7 @@ Sub Main
 	Dim mNewFileName As String = System.Guid.NewGuid.ToString() 'replace unique ID by your naming configuration, e.g. sequence of f(x) key parameter values
 
 	'returns full file name in local working folder (download enforces override, if local file exists)
-	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndNewName("$/Designs/Inventor Sample Data/Fishing Rod/Back Side Cover.ipt", mNewFileName, True, True) 'optionally add the mNumInput variable; note - new file name must not contain an extension! The check-out option is True as default; set to False or remove.
+	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndNewName("$/Designs/Inventor Sample Data/Fishing Rod/Back Side Cover.ipt", mNewFileName, True, True) 'note - new file name must not contain an extension! The check-out option is True as default; set to False or remove.
 	If mVaultFile Is Nothing Then
 		Logger.Error("File copy not created; validate source file can be found and new file name." )
 	Else

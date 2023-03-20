@@ -1,12 +1,13 @@
 ﻿'DISCLAIMER:
 '---------------------------------
-'In any case, code, templates, and snippets of this solution are of "work in progress" character.
-'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
-'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+'In any case, this solution's code, templates, and snippets are of "work in progress" character.
+'Autodesk does Not represent that these samples are reliable, accurate, complete, Or otherwise valid For production usage. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
+
 	'Validate user's login state
-	If iLogicVault.LoggedIn = False
+	If iLogicVault.LoggedIn = FalseThen
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
@@ -14,7 +15,7 @@ Sub Main
 	'Set the name of the numbering scheme or use 'Default' to use the pre-set scheme
 	Dim mNumSchmName As String = "Default"
 	'Optionally collect input values for file the selected numbering scheme; use the order of the fields as configured in the scheme;
-	Dim mNumInput As New System.Collections.Generic.List(Of String) 'add UDP.DisplayName, Value Pairs
+	Dim mNumInput As New System.Collections.Generic.List(Of String)
 
 	'returns full file name in local working folder (download enforces override, if local file exists)
 	Dim mVaultFile As String = iLogicVault.GetFileCopyBySourceFileNameAndAutoNumber("$/Designs/Inventor Sample Data/Fishing Rod/Back Side Cover.ipt", mNumSchmName, , False) 'optionally add the mNumInput variable; note - the check-out flag is an option also; default = True.

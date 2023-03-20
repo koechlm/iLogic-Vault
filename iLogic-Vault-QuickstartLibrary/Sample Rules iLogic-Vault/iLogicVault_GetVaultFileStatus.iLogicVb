@@ -1,12 +1,13 @@
 ﻿'DISCLAIMER:
 '---------------------------------
-'In any case, code, templates, and snippets of this solution are of "work in progress" character.
-'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
-'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+'In any case, this solution's code, templates, and snippets are of "work in progress" character.
+'Autodesk does Not represent that these samples are reliable, accurate, complete, Or otherwise valid For production usage. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
+
 	'Validate user's login state
-	If iLogicVault.LoggedIn = False
+	If iLogicVault.LoggedIn = FalseThen
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
@@ -14,7 +15,7 @@ Sub Main
 	'Retrieve the active document's Vault file status as name/value pairs 
 	Dim mDocVaultStatus As New Dictionary(Of String, String)
 	mDocVaultStatus = iLogicVault.GetVaultFileStatus(ThisDoc.PathAndFileName(True))
-	If mDocVaultStatus.Item("ErrorState") = "None"
+	If mDocVaultStatus.Item("ErrorState") = "None" Then
 		Logger.Info("CheckOutState = " + mDocVaultStatus.Item("CheckOutState"))
 		Logger.Info("ConsumableState = " + mDocVaultStatus.Item("ConsumableState"))
 		Logger.Info("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
@@ -25,4 +26,5 @@ Sub Main
 	Else
 		Logger.Error("ErrorState = " + mDocVaultStatus.Item("ErrorState"))
 	End If
+
 End Sub

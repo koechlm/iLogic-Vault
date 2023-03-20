@@ -123,6 +123,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="Sample Rules iLogic-Vault\Autodesk Inventor 2024 iLogic-Vault Sample Rules.pdf" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_AddFile.iLogicVb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -162,6 +163,7 @@
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyByBySourceFileNameAndAutoNumber.iLogicVb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndAutoNumber.iLogicVb" />
     <None Include="Sample Rules iLogic-Vault\iLogicVault_GetFileCopyBySourceFileNameAndNewName.iLogicVb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -1,17 +1,15 @@
-﻿
-'DISCLAIMER:
+﻿'DISCLAIMER:
 '---------------------------------
-'In any case, code, templates, and snippets of this solution are of "work in progress" character.
-'Neither Markus Koechl, nor Autodesk represents that these samples are reliable, accurate, complete, or otherwise valid. 
-'Accordingly, those configuration samples are provided “as is” with no warranty of any kind and you use the applications at your own risk.
+'In any case, this solution's code, templates, and snippets are of "work in progress" character.
+'Autodesk does Not represent that these samples are reliable, accurate, complete, Or otherwise valid For production usage. 
+'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
-	'Note - This rule expects that the current document is vaulted.
-	break
-	Dim ex As Exception
+
+	'Note - This rule expects that the current document is added to Vault Professional.
 
 	'the rule applies to part and assembly files only
-	If ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kAssemblyDocumentObject And ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kPartDocumentObject
+	If ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kAssemblyDocumentObject And ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kPartDocumentObject Then
 		Logger.Info("Rule iLogicVault_AddFileAndAttach applies to part and assembly documents only. Exited without action.")
 		Return
 	End If
