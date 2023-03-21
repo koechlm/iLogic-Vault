@@ -5,15 +5,15 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
-	
+
 	'the rule applies to part and assembly files only
 	If ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kAssemblyDocumentObject And ThisDoc.Document.DocumentType <> Inventor.DocumentTypeEnum.kPartDocumentObject Then
 		Logger.Info("Rule iLogicVault_AddFileAndAttach applies to part and assembly documents only. Exited without action.")
 		Return
 	End If
 
-	'Validate user's login state
-	If iLogicVault.LoggedIn = False Then
+	'Validate user's login state; it is optional as iLogicVault methods throw an exception with message 'Please log in to Vault before using this function'.
+	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If

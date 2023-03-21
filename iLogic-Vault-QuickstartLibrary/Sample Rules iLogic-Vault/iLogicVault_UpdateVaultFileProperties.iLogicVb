@@ -4,10 +4,10 @@
 'Autodesk does Not represent that these samples are reliable, accurate, complete, Or otherwise valid For production usage. 
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
-Sub Main()
+Sub Main
 
-	'Validate user's login state
-	If iLogicVault.LoggedIn = FalseThen Then
+	'Validate user's login state; it is optional as iLogicVault methods throw an exception with message 'Please log in to Vault before using this function'.
+	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If

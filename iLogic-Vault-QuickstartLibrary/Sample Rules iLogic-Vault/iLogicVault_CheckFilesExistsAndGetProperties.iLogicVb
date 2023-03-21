@@ -5,13 +5,13 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
-	
-	'Validate user's login state
+
+	'Validate user's login state; it is optional as iLogicVault methods throw an exception with message 'Please log in to Vault before using this function'.
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
-	
+
 	'Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
 	mSearchParams.Add("Part Number", "407-02")	'applies to the file $\Designs\Inventor Sample Data\Fishing Rod\Back Side Cover.ipt

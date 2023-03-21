@@ -5,22 +5,22 @@
 'Accordingly, those configuration samples are provided “as is” with no warranty of any kind, and you use the applications at your own risk.
 
 Sub Main
-	
-	'Validate user's login state
+
+	'Validate user's login state; it is optional as iLogicVault methods throw an exception with message 'Please log in to Vault before using this function'.
 	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
-	End If	
+	End If
 
 	'Build one to many name/value pairs of Property/Value as search criteria;
 	Dim mSearchParams As New Dictionary(Of String, String) 'add UDP.DisplayName, Value Pairs
 	mSearchParams.Add("Part Number", "407-02")	'applies to the file $\Designs\Inventor Sample Data\Fishing Rod\Back Side Cover.ipt
 	mSearchParams.Add("Name", "Back Side Cover*") 'applies to the files Back Side Cover.ipt and Back Side Cover.iam
-	
+
 	Dim mVaultFiles As List(Of String)
 	mVaultFiles = iLogicVault.CheckFilesExistBySearchCriteria(mSearchParams, False) 'returns multiple files, if MatchAllCriteria is False; returns single file if MatchAllCriteria is True
 	If mVaultFiles Is Nothing Then
-		Logger.Error("The file(s) searched was(were) not found. Please double check that the search criteria's relevance.") 
+		Logger.Error("The file(s) searched was(were) not found. Please double check that the search criteria's relevance.")
 	ElseIf mVaultFiles.Count > 0 Then
 		Dim mFileList As String
 		For Each mFile As String In mVaultFiles

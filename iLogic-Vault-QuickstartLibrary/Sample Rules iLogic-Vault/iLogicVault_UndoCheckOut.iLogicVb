@@ -7,7 +7,7 @@
 Sub Main
 
 	'Validate user's login state
-	If iLogicVault.LoggedIn = FalseThen
+	If iLogicVault.LoggedIn = False
 		Logger.Error("Not Logged In to Vault! - Login first and repeat executing this rule.")
 		Exit Sub
 	End If
