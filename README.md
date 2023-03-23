@@ -1,5 +1,5 @@
 # iLogic-Vault
-iLogic Rules, Snippets and iLogic-Vault Quickstart library
+iLogic Rules, Snippets and iLogic-Vault Quickstart library - See Documentation on details: https://github.com/koechlm/iLogic-Vault/blob/2023/Inventor%20iLogic%20-%20Vault%20Quickstart%20Library.pdf
 
 Disclaimer
 
