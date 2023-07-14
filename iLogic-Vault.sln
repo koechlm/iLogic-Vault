@@ -17,6 +17,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Inventor iLogic - Vault Quickstart Library.pdf = Inventor iLogic - Vault Quickstart Library.pdf
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDK References", "SDK References", "{47E4EDE6-D11A-4031-AC26-197A0F160B80}"
+	ProjectSection(SolutionItems) = preProject
+		SDK References\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll = SDK References\Autodesk.Connectivity.Explorer.ExtensibilityTools.dll
+		SDK References\Autodesk.Connectivity.Explorer.ExtensibilityTools.XML = SDK References\Autodesk.Connectivity.Explorer.ExtensibilityTools.XML
+		SDK References\Autodesk.Connectivity.Extensibility.Framework.dll = SDK References\Autodesk.Connectivity.Extensibility.Framework.dll
+		SDK References\Autodesk.Connectivity.Extensibility.Framework.XML = SDK References\Autodesk.Connectivity.Extensibility.Framework.XML
+		SDK References\Autodesk.DataManagement.Client.Framework.dll = SDK References\Autodesk.DataManagement.Client.Framework.dll
+		SDK References\Autodesk.DataManagement.Client.Framework.Forms.xml = SDK References\Autodesk.DataManagement.Client.Framework.Forms.xml
+		SDK References\Autodesk.DataManagement.Client.Framework.Vault.dll = SDK References\Autodesk.DataManagement.Client.Framework.Vault.dll
+		SDK References\Autodesk.DataManagement.Client.Framework.Vault.xml = SDK References\Autodesk.DataManagement.Client.Framework.Vault.xml
+		SDK References\Autodesk.DataManagement.Client.Framework.xml = SDK References\Autodesk.DataManagement.Client.Framework.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
